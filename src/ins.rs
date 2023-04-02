@@ -89,7 +89,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     };
 
     let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
-    info, "CREATE_BUY_OFFER_FEE")?;
+    info, "CREATE_SELL_OFFER_FEE")?;
  
 
     let _key = (owner, offer.token_id );

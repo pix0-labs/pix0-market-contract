@@ -23,6 +23,9 @@ pub enum ContractError {
     #[error("ContractInfoNotFound")]
     ContractInfoNotFound { message : String },
 
+    #[error("ErrorPayingContractTreasuries")]
+    ErrorPayingContractTreasuries{ message : String },
+
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
 }
@@ -35,6 +38,10 @@ impl From<CommonContractError> for ContractError {
 
             CommonContractError::ContractInfoNotFound { message } => 
             ContractError::ContractInfoNotFound { message: message }
+            ,
+
+            CommonContractError::ErrorMakingPayment { message } => 
+            ContractError::ErrorPayingContractTreasuries { message:  message }
             ,
 
             _ => ContractError::CustomErrorMesg { message: "Custom error".to_string() }

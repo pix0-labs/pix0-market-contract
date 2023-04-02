@@ -119,7 +119,7 @@ pub (crate) fn internal_get_sell_offer(deps: Deps, owner : Addr, token_id : Stri
     }
 }
 
-
+#[allow(dead_code)]
 pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -> Option<SellOffer>{
 
     let res =  sell_offers_store().idx.offers_by_id.item(deps.storage, offer_id);
