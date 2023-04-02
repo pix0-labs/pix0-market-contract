@@ -40,7 +40,6 @@ pub enum QueryMsg {
     },
 }
 
-// We define a custom struct for each query response
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct SellOffersWithParamsResponse {
     
@@ -52,6 +51,7 @@ pub struct SellOffersWithParamsResponse {
 
     pub limit : Option<u32>,
 }
+
 
 
 impl SellOffersWithParamsResponse {
@@ -67,3 +67,9 @@ impl SellOffersWithParamsResponse {
     }
 }
 
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct SellOfferResponse {
+    
+    pub offer : Option<SellOffer>,
+}
