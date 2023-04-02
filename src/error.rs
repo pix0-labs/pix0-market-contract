@@ -14,7 +14,9 @@ pub enum ContractError {
     #[error("CustomErrorMesg")]
     CustomErrorMesg { message : String },
 
-    
+    #[error("SellOfferAlreadyExists")]
+    SellOfferAlreadyExists { message : String },
+
     #[error("ContractInfoNotFound")]
     ContractInfoNotFound { message : String },
 

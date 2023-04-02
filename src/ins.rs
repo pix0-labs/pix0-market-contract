@@ -27,15 +27,48 @@ pub fn update_contract_info (deps: DepsMut,
 }
 
 
+pub fn sell_offer_exists( deps: &DepsMut, info: MessageInfo, token_id : String ) -> bool {
+
+    let owner = info.clone().sender;
+    
+    let _key = (owner, token_id);
+
+    let loaded_sell_offer = sell_offers_store()
+    .idx.offers.item(deps.storage, _key);
+    
+    let mut exists = false; 
+
+    match loaded_sell_offer {
+
+        Ok (c) => {
+            if c.is_some() {
+                exists = true
+            }
+        },
+
+        Err(_)=> exists = false, 
+    }
+
+    return exists;
+}
+
+
+
 pub fn create_sell_offer(mut deps: DepsMut, 
 _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractError> {
 
     let owner = info.clone().sender;
 
+    if sell_offer_exists(&deps, info.clone(), offer.token_id.clone()) {
+
+        return Err(ContractError::SellOfferAlreadyExists { 
+            message: format!("SellOffer for {} already exists!", offer.token_id.clone()).to_string() } );
+  
+    }
+
     let date_created = _env.block.time;
  
     let new_offer = SellOffer {
-
         owner : owner.clone(),
         token_id : offer.token_id.clone(),
         offer_id : offer.to_offer_id(),
