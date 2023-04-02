@@ -2,6 +2,7 @@ use cosmwasm_std::{DepsMut, Env, Response, MessageInfo, Addr};
 use crate::state::{SellOffer, SELL_STATUS_NEW};
 use crate::indexes::sell_offers_store;
 use crate::error::ContractError;
+use crate::query::internal_get_sell_offer;
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -102,4 +103,48 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     
 
 }
+
+
+pub fn update_sell_offer(deps: DepsMut, 
+    _env : Env, info: MessageInfo,
+    sell_offer : SellOffer) -> Result<Response, ContractError> {
+
+    let owner = info.clone().sender;
+
+
+    let offer = internal_get_sell_offer(deps.as_ref(), owner.clone(), sell_offer.token_id.clone());
+
+    if offer.is_none () {
+
+        return Err(ContractError::SellOfferNotFound { 
+            message: format!("SellOffer for {} not found!", sell_offer.token_id.clone()).to_string() } );
+  
+    }
+
+    let mut offer_to_update = offer.unwrap();
+
+    
+    offer_to_update.price = sell_offer.price;
+    offer_to_update.allowed_direct_buy = sell_offer.allowed_direct_buy;
+
+    if sell_offer.collection_info.is_some() {
+        offer_to_update.collection_info = sell_offer.collection_info;
+    }
+
+    offer_to_update.date_updated = Some(_env.block.time);
+
+    let _key = (owner, sell_offer.token_id);
+
+    sell_offers_store().save(deps.storage, _key.clone(), &offer_to_update)?;
+    
+    Ok(Response::new()
+    .add_attribute("method", "update-sell-offer"))
+  
+}
+
+/*
+pub fn create_buy_offer(mut deps: DepsMut, 
+    _env : Env, info: MessageInfo, offer : SellOfferz)  -> Result<Response, ContractError> {
+
+} */
 

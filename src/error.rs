@@ -17,6 +17,9 @@ pub enum ContractError {
     #[error("SellOfferAlreadyExists")]
     SellOfferAlreadyExists { message : String },
 
+    #[error("SellOfferNotFound")]
+    SellOfferNotFound { message : String },
+
     #[error("ContractInfoNotFound")]
     ContractInfoNotFound { message : String },
 

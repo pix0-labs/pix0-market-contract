@@ -95,3 +95,45 @@ fn filter_sell_offer_result_all(offers : Vec<SellOffer>,
 
 }
 
+
+
+pub (crate) fn internal_get_sell_offer(deps: Deps, owner : Addr, token_id : String  ) -> Option<SellOffer>{
+
+    let _key = (owner, token_id );
+
+    let stored_sell_offer = sell_offers_store().key(_key);
+    
+    let res = stored_sell_offer.may_load(deps.storage);
+
+    if res.is_ok() {
+
+        let value = res.unwrap_or_else(|_| {
+            None
+        });
+
+        value 
+    }
+    else {
+
+        None
+    }
+}
+
+
+pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -> Option<SellOffer>{
+
+    let res =  sell_offers_store().idx.offers_by_id.item(deps.storage, offer_id);
+    
+    if res.is_ok() {
+
+        let value = res.unwrap_or_else(|_| {
+            None
+        });
+
+        Some(value.unwrap().1)
+    }
+    else {
+
+        None
+    }
+}
