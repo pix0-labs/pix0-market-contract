@@ -1,12 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
 };
 use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::state::{State, STATE};
 use crate::ins::{create_sell_offer,update_contract_info};
 use crate::query::get_sell_offers_of;
 use pix0_contract_common::msg::InstantiateMsg;
@@ -44,7 +43,7 @@ pub fn execute(
     match msg {
         
         ExecuteMsg::UpdateContractInfo { fees, treasuries , contracts,  log_last_payment} =>
-        update_contract_info(deps, _env, info, fees, treasuries, contracts,log_last_payment),
+        update_contract_info(deps, _env, _info, fees, treasuries, contracts,log_last_payment),
 
         ExecuteMsg::CreateSellOffer { offer } => create_sell_offer(deps, _env,_info, offer),
 
@@ -57,6 +56,6 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetSellOffersOf {
             owner, status, start, limit
-        } => to_binary(&get_sell_offers_of(deps, owner, status, start , limit)?),
+        } => to_binary(&get_sell_offers_of(_deps, owner, status, start , limit)?),
     }
 }

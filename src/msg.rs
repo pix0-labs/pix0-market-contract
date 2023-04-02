@@ -39,7 +39,7 @@ pub enum QueryMsg {
 
         start : Option<u32>,
 
-        limit : Option<32>,
+        limit : Option<u32>,
     },
 }
 
