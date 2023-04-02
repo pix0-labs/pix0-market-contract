@@ -6,7 +6,7 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer};
+use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer, update_buy_offer, cancel_buy_offer};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
@@ -49,6 +49,12 @@ pub fn execute(
 
         ExecuteMsg::CreateBuyOffer { buy_offer, sell_offer_id } => 
         create_buy_offer(deps, _env,_info, buy_offer, sell_offer_id),
+
+        ExecuteMsg::UpdateBuyOffer { buy_offer, sell_offer_id } => 
+        update_buy_offer(deps, _env,_info, buy_offer, sell_offer_id),
+
+        ExecuteMsg::CancelBuyOffer { sell_offer_id } => 
+        cancel_buy_offer(deps, _env,_info, sell_offer_id),
 
 
     }

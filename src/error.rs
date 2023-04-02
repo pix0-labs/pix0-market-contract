@@ -20,6 +20,9 @@ pub enum ContractError {
     #[error("BuyOfferAlreadyExists")]
     BuyOfferAlreadyExists { message : String },
 
+    #[error("BuyOfferNotFound")]
+    BuyOfferNotFound { message : String },
+
     #[error("SellOfferNotFound")]
     SellOfferNotFound { message : String },
 

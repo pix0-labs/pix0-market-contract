@@ -143,11 +143,11 @@ pub fn update_sell_offer(deps: DepsMut,
 }
 
 
-fn buy_offer_exists (buy_offer : &BuyOffer, sell_offer : &SellOffer) -> bool {
+fn buy_offer_exists (owner : &Addr, sell_offer : &SellOffer) -> bool {
 
     let b = sell_offer.buy_offers
     .iter()
-    .find(|b| b.owner == buy_offer.owner);
+    .find(|b| b.owner == *owner);
 
     return b.is_some();
 }
@@ -171,11 +171,13 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     let mut buy_offer  = buy_offer;
     buy_offer.owner = owner.clone();
+    buy_offer.date_created = Some(_env.block.time);
+    buy_offer.date_updated = buy_offer.date_created;
 
-    if buy_offer_exists(&buy_offer, &sell_offer) {
+    if buy_offer_exists(&owner, &sell_offer) {
 
         return Err(ContractError::BuyOfferAlreadyExists { 
-            message: format!("Buy Offer for {:?} not found!", owner) } );
+            message: format!("Buy Offer for {:?} already exists!", owner) } );
         
     } 
 
@@ -184,8 +186,91 @@ pub fn create_buy_offer(mut deps: DepsMut,
  
     sell_offer.buy_offers.push ( buy_offer);
 
+    let _key = (owner, sell_offer.token_id.clone());
+
+    sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
+   
     Ok(Response::new()
     .add_attribute("method", "create-buy-offer")
     .add_messages(bmsgs))
 } 
 
+
+pub fn update_buy_offer(deps: DepsMut, 
+    _env : Env, info: MessageInfo,
+    buy_offer : BuyOffer, 
+    sell_offer_id : String )  -> Result<Response, ContractError> {
+
+    let owner = info.sender;
+
+    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
+
+    if offer.is_none (){
+
+        return Err(ContractError::SellOfferNotFound { 
+            message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
+    }
+
+    let mut sell_offer = offer.unwrap();
+
+    if !buy_offer_exists(&owner.clone(), &sell_offer) {
+
+        return Err(ContractError::BuyOfferNotFound { 
+            message: format!("Buy Offer for {:?} not found!", owner.clone()) } );
+        
+    } 
+
+   
+    for bo in sell_offer.buy_offers.iter_mut() {
+
+        if bo.owner == owner.clone() {
+            bo.price = buy_offer.price.clone();
+            bo.date_updated = Some(_env.block.time);
+        }
+    } 
+
+    let _key = (owner, sell_offer.token_id.clone());
+
+    sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
+   
+
+    Ok(Response::new()
+    .add_attribute("method", "update-buy-offer"))
+} 
+
+
+pub fn cancel_buy_offer(deps: DepsMut, 
+    _env : Env, info: MessageInfo, 
+    sell_offer_id : String )  -> Result<Response, ContractError> {
+
+    let owner = info.sender;
+
+    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
+
+    if offer.is_none (){
+
+        return Err(ContractError::SellOfferNotFound { 
+            message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
+    }
+
+    let mut sell_offer = offer.unwrap();
+
+ 
+    if !buy_offer_exists(&owner.clone(), &sell_offer) {
+
+        return Err(ContractError::BuyOfferNotFound { 
+            message: format!("Buy Offer for {:?} not found!", owner.clone()) } );
+        
+    } 
+
+    sell_offer.buy_offers.retain(|b| b.owner != owner.clone() );
+
+
+    let _key = (owner, sell_offer.token_id.clone());
+
+    sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
+   
+
+    Ok(Response::new()
+    .add_attribute("method", "cancel-buy-offer"))
+} 

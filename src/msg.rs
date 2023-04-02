@@ -33,6 +33,20 @@ pub enum ExecuteMsg {
 
     },
 
+    UpdateBuyOffer {
+
+        buy_offer : BuyOffer,
+
+        sell_offer_id : String,
+
+    },
+
+    CancelBuyOffer {
+
+        sell_offer_id : String,
+
+    },
+
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
