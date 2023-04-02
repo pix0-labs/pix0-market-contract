@@ -1,5 +1,5 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr };
-use crate::indexes::SELL_OFFERS_STORE;
+use crate::indexes::sell_offers_store;
 use crate::state::SellOffer;
 use crate::msg::SellOffersWithParamsResponse;
 use std::convert::TryInto;
@@ -16,7 +16,8 @@ pub fn get_sell_offers_of(deps : Deps,
    
     let offers : StdResult<Vec<SellOffer>> = 
 
-    SELL_OFFERS_STORE
+    sell_offers_store()
+    .idx.offers
     .prefix(owner)
     .range(deps.storage, None, None, Order::Ascending)
     .map(|offer| {
@@ -26,6 +27,7 @@ pub fn get_sell_offers_of(deps : Deps,
             SellOffer { 
                 owner : s.owner,
                 price : s.price,
+                offer_id : s.offer_id,
                 collection_info : s.collection_info,
                 token_id : s.token_id,
                 buy_offers : s.buy_offers,

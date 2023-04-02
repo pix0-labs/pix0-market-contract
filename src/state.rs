@@ -1,6 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use cosmwasm_std::{Addr, Coin, Timestamp};
+use crate::utils::offer_id;
 
 pub const SELL_STATUS_NEW : u8 = 1;
 
@@ -29,9 +30,11 @@ pub struct SellOffer {
 
     pub token_id : String, 
 
-    pub collection_info : Option<SimpleCollectionInfo>,
-
     pub owner : Addr,
+
+    pub offer_id : Option<String>,
+
+    pub collection_info : Option<SimpleCollectionInfo>,
 
     pub price : Coin, 
 
@@ -47,6 +50,18 @@ pub struct SellOffer {
     
     pub date_updated : Option<Timestamp>,
     
+}
+
+
+impl SellOffer {
+
+    pub fn to_offer_id(&self) -> Option<String> {
+
+        let key = (self.owner.clone(), self.token_id.clone());
+
+        return Some(offer_id(&key));
+        
+    }
 }
 
 

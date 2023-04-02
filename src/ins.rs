@@ -1,6 +1,6 @@
 use cosmwasm_std::{DepsMut, Env, Response, MessageInfo, Addr};
 use crate::state::{SellOffer, SELL_STATUS_NEW};
-use crate::indexes::SELL_OFFERS_STORE;
+use crate::indexes::sell_offers_store;
 use crate::error::ContractError;
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
@@ -38,6 +38,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
 
         owner : owner.clone(),
         token_id : offer.token_id.clone(),
+        offer_id : offer.to_offer_id(),
         buy_offers : vec![],
         price : offer.price,
         collection_info : offer.collection_info,
@@ -54,7 +55,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
 
     let _key = (owner, offer.token_id );
 
-    SELL_OFFERS_STORE.save(deps.storage, _key.clone(), &new_offer)?;
+    sell_offers_store().save(deps.storage, _key.clone(), &new_offer)?;
 
 
     Ok(Response::new()
