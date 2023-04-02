@@ -9,7 +9,7 @@ mod tests {
     use pix0_contract_common::msg::InstantiateMsg;
     use pix0_contract_common::state::*;
    // use crate::ins::*;
-    //use crate::query::*;
+    use crate::query::*;
    
 
     const DEFAULT_PRICE_DENOM : &str = "uconst";
@@ -50,7 +50,7 @@ mod tests {
         for x in 0..10 {
      
             let tid = format!("Tk_00{}", x);
-            let oid = format!("Offer_00{}", x);
+            //let oid = format!("Offer_00{}", x);
 
             let price : Coin = Coin {
                 amount : Uint128::from((3500 * (x+1)) as u64 ),
@@ -61,7 +61,7 @@ mod tests {
                 token_id : tid, 
                 owner : Addr::unchecked(owner), 
                 collection_info : None,
-                offer_id : Some(oid),
+                offer_id : None,//Some(oid),
                 price : price, 
                 status : 0,
                 buy_offers : vec![],
@@ -82,14 +82,28 @@ mod tests {
   
                  println!("Error.creating so:{}, error:is::{:?}", s.token_id, _res);
              }
+             /*
              else {
 
                 println!("{}.Created.so:{:?}", x, _res);
-             }
+             } */
 
         }
 
+        let res = get_sell_offers_of(deps.as_ref(), Addr::unchecked(owner), None, None, None);
 
+        for o in res.ok().unwrap().offers {
+
+            println!("Offer.id::{:?}", o.offer_id);
+        }
+
+    
+        let oid = String::from("OF4282D6668CBCC8EF");
+
+        let o = internal_get_sell_offer_by_id(deps.as_ref(), oid.clone());
+
+        assert_eq!(oid, o.unwrap().offer_id.unwrap());
+        
     }
 
 }

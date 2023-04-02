@@ -16,6 +16,6 @@ pub fn hash_to_hex<T:Hash>(t: &T) -> String {
 
 
 pub fn offer_id<T:Hash>(t: &T) -> String {
-    format!("O{}", hash_to_hex(t)).to_uppercase()
+    format!("OF{}", hash_to_hex(t)).to_uppercase()
 }
 
