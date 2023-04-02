@@ -1,8 +1,8 @@
 use cosmwasm_std::{DepsMut, Env, Response, MessageInfo, Addr};
-use crate::state::{SellOffer, SELL_STATUS_NEW};
+use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::sell_offers_store;
 use crate::error::ContractError;
-use crate::query::internal_get_sell_offer;
+use crate::query::{internal_get_sell_offer, internal_get_sell_offer_by_id};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -142,9 +142,50 @@ pub fn update_sell_offer(deps: DepsMut,
   
 }
 
-/*
-pub fn create_buy_offer(mut deps: DepsMut, 
-    _env : Env, info: MessageInfo, offer : SellOfferz)  -> Result<Response, ContractError> {
 
-} */
+fn buy_offer_exists (buy_offer : &BuyOffer, sell_offer : &SellOffer) -> bool {
+
+    let b = sell_offer.buy_offers
+    .iter()
+    .find(|b| b.owner == buy_offer.owner);
+
+    return b.is_some();
+}
+
+pub fn create_buy_offer(mut deps: DepsMut, 
+    _env : Env, info: MessageInfo, 
+    buy_offer : BuyOffer, 
+    sell_offer_id : String )  -> Result<Response, ContractError> {
+
+    let owner = info.clone().sender;
+
+    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
+
+    if offer.is_none (){
+
+        return Err(ContractError::SellOfferNotFound { 
+            message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
+    }
+
+    let mut sell_offer = offer.unwrap();
+
+    let mut buy_offer  = buy_offer;
+    buy_offer.owner = owner.clone();
+
+    if buy_offer_exists(&buy_offer, &sell_offer) {
+
+        return Err(ContractError::BuyOfferAlreadyExists { 
+            message: format!("Buy Offer for {:?} not found!", owner) } );
+        
+    } 
+
+    let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
+    info, "CREATE_BUYL_OFFER_FEE")?;
+ 
+    sell_offer.buy_offers.push ( buy_offer);
+
+    Ok(Response::new()
+    .add_attribute("method", "create-buy-offer")
+    .add_messages(bmsgs))
+} 
 

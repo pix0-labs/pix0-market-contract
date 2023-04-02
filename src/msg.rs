@@ -1,6 +1,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::state::SellOffer;
+use crate::state::{SellOffer, BuyOffer};
 use cosmwasm_std::Addr;
 use pix0_contract_common::state::{Fee, Contract};
 
@@ -24,11 +24,21 @@ pub enum ExecuteMsg {
 
         offer : SellOffer,
     },
+
+    CreateBuyOffer {
+
+        buy_offer : BuyOffer,
+
+        sell_offer_id : String,
+
+    },
+
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
+
     GetSellOffersOf {
         owner : Addr, 
 
@@ -38,6 +48,13 @@ pub enum QueryMsg {
 
         limit : Option<u32>,
     },
+
+    GetSellOfferById {
+
+        offer_id : String,
+    }
+
+
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -70,6 +87,6 @@ impl SellOffersWithParamsResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct SellOfferResponse {
-    
+
     pub offer : Option<SellOffer>,
 }

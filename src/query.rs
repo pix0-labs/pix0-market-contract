@@ -96,15 +96,6 @@ fn filter_sell_offer_result_all(offers : Vec<SellOffer>,
 }
 
 
-
-pub fn get_sell_offer(deps: Deps, owner : Addr, token_id : String  ) ->StdResult<SellOfferResponse>{
-
-    Ok( SellOfferResponse {
-        offer :internal_get_sell_offer(deps, owner, token_id)
-    })
-} 
-
-
 pub fn get_sell_offer_by_id(deps: Deps, offer_id : String ) -> StdResult<SellOfferResponse>{
 
     Ok( SellOfferResponse {

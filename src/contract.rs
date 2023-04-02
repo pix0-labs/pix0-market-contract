@@ -6,8 +6,8 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::ins::{create_sell_offer,update_contract_info};
-use crate::query::get_sell_offers_of;
+use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer};
+use crate::query::{get_sell_offers_of, get_sell_offer_by_id};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
 // version info for migration info
@@ -47,6 +47,9 @@ pub fn execute(
 
         ExecuteMsg::CreateSellOffer { offer } => create_sell_offer(deps, _env,_info, offer),
 
+        ExecuteMsg::CreateBuyOffer { buy_offer, sell_offer_id } => 
+        create_buy_offer(deps, _env,_info, buy_offer, sell_offer_id),
+
 
     }
 }
@@ -57,5 +60,10 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetSellOffersOf {
             owner, status, start, limit
         } => to_binary(&get_sell_offers_of(_deps, owner, status, start , limit)?),
+
+        QueryMsg::GetSellOfferById {
+            offer_id
+        } => to_binary(&get_sell_offer_by_id(_deps, offer_id)?),
+
     }
 }
