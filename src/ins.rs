@@ -67,11 +67,16 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     }
 
     let date_created = _env.block.time;
+
+    let mut offer_id = offer.offer_id.clone();
+    if offer_id.is_none() {
+        offer_id = offer.to_offer_id();
+    }
  
     let new_offer = SellOffer {
         owner : owner.clone(),
         token_id : offer.token_id.clone(),
-        offer_id : offer.to_offer_id(),
+        offer_id : offer_id,
         buy_offers : vec![],
         price : offer.price,
         collection_info : offer.collection_info,
