@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin};
+use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::sell_offers_store;
 use crate::error::ContractError;
@@ -229,6 +229,39 @@ fn check_is_fund_sufficient (info : MessageInfo, required_fund : Coin) -> Result
         Ok(())
     }
 }
+
+
+// this is a helper to move the tokens, so the business logic is easy to read
+fn send_tokens(to_address: Addr, amount: Vec<Coin>, action: &str) -> Response {
+    Response::new()
+    .add_message(BankMsg::Send {
+        to_address: to_address.clone().into(),
+        amount,
+    })
+    .add_attribute("action", action)
+    .add_attribute("to", to_address)
+}
+
+#[allow(dead_code)]
+pub (crate) fn transfer_to_escrow(env : Env, coin : Coin) -> Result<Response, ContractError> {
+
+    Ok(send_tokens(env.contract.address, vec![coin], "transfer-to-escrow"))
+}
+
+#[allow(dead_code)]
+pub (crate) fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) ->Option<Coin> {
+
+    let balance = deps.querier.query_balance(&env.contract.address, denom);
+
+    if balance.is_ok() {
+        balance.ok()
+    }
+    else {
+
+        None 
+    }
+}
+
 
 pub fn create_buy_offer(mut deps: DepsMut, 
     _env : Env, info: MessageInfo, 
