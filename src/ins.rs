@@ -99,7 +99,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
 
     Ok(Response::new()
     .add_messages(bmsgs)
-    .add_attribute("method", "create-sell-offer"))
+    .add_attribute("action", "create-sell-offer"))
     
 
 }
@@ -138,7 +138,7 @@ pub fn update_sell_offer(deps: DepsMut,
     sell_offers_store().save(deps.storage, _key.clone(), &offer_to_update)?;
     
     Ok(Response::new()
-    .add_attribute("method", "update-sell-offer"))
+    .add_attribute("action", "update-sell-offer"))
   
 }
 
@@ -156,7 +156,7 @@ pub fn remove_sell_offer (
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
     Ok(Response::new()
-    .add_attribute("method", "remove-sell-offer"))  
+    .add_attribute("action", "remove-sell-offer"))  
 
 }
 
@@ -209,7 +209,7 @@ pub fn create_buy_offer(mut deps: DepsMut,
     sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
    
     Ok(Response::new()
-    .add_attribute("method", "create-buy-offer")
+    .add_attribute("action", "create-buy-offer")
     .add_messages(bmsgs))
 } 
 
@@ -253,7 +253,7 @@ pub fn update_buy_offer(deps: DepsMut,
    
 
     Ok(Response::new()
-    .add_attribute("method", "update-buy-offer"))
+    .add_attribute("action", "update-buy-offer"))
 } 
 
 
@@ -290,5 +290,5 @@ pub fn cancel_buy_offer(deps: DepsMut,
    
 
     Ok(Response::new()
-    .add_attribute("method", "cancel-buy-offer"))
+    .add_attribute("action", "cancel-buy-offer"))
 } 
