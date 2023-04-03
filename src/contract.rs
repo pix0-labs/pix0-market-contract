@@ -7,7 +7,8 @@ use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer, 
-update_buy_offer, cancel_buy_offer, update_sell_offer, remove_sell_offer, transfer_to_escrow};
+update_buy_offer, cancel_buy_offer, update_sell_offer, remove_sell_offer, 
+transfer_to_escrow, transfer_from_escrow};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
@@ -64,6 +65,8 @@ pub fn execute(
         ExecuteMsg::TestTransferToEscrow { coin } => 
         transfer_to_escrow(_env,coin),
 
+        ExecuteMsg::TestTransferFromEscrow { recipient, coin } => 
+        transfer_from_escrow(recipient, coin),
     }
 }
 

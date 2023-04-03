@@ -249,6 +249,12 @@ pub fn transfer_to_escrow(env : Env, coin : Coin) -> Result<Response, ContractEr
 
 
 
+pub fn transfer_from_escrow(recipient : Addr, coin : Coin) -> Result<Response, ContractError> {
+
+    Ok(send_tokens(recipient, vec![coin], "transfer-from-escrow"))
+}
+
+
 pub fn create_buy_offer(mut deps: DepsMut, 
     _env : Env, info: MessageInfo, 
     buy_offer : BuyOffer, 

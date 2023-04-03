@@ -62,6 +62,14 @@ pub enum ExecuteMsg {
         coin : Coin,
     },
 
+
+    TestTransferFromEscrow {
+        
+        recipient : Addr,
+        
+        coin : Coin,
+
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
