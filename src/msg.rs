@@ -120,6 +120,34 @@ impl SellOffersWithParamsResponse {
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct BuyOffersWithParamsResponse {
+    
+    pub offers : Vec<BuyOffer>,
+
+    pub total : Option<u32>,
+
+    pub start : Option<u32>,
+
+    pub limit : Option<u32>,
+}
+
+
+impl BuyOffersWithParamsResponse {
+
+    pub fn empty_response() -> Self {
+
+        BuyOffersWithParamsResponse {
+            offers: vec![],
+            total : None,
+            start : None,
+            limit : None, 
+        }
+    }
+}
+
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct SellOfferResponse {
 
     pub offer : Option<SellOffer>,

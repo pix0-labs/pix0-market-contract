@@ -2,7 +2,7 @@ use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
 use crate::indexes::{sell_offers_store, buy_offers_store};
 use crate::state::{SellOffer, BuyOffer};
 use crate::error::ContractError;
-use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse};
+use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse};
 use std::convert::TryInto;
 
 pub const DEFAULT_LIMIT : u32 = 10;
@@ -211,4 +211,137 @@ pub fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) 
     Ok(BalanceResponse{
         amount : internal_get_balance_of_escrow(deps, env, denom)
     })
+}
+
+
+pub fn get_buy_offers_by(deps : Deps,
+    sell_offer_id : String , 
+    accepted : Option<bool>,
+    start: Option<u32>, limit: Option<u32>) 
+    ->StdResult<BuyOffersWithParamsResponse> {    
+   
+    let offers : StdResult<Vec<BuyOffer>> = 
+
+    buy_offers_store()
+    .idx.sell_offers
+    .prefix(sell_offer_id)
+    .range(deps.storage, None, None, Order::Ascending)
+    .map(|offer| {
+        
+        let (_k, b) = offer?;
+        Ok (
+            BuyOffer { 
+                owner :b.owner,
+                sell_offer_id : b.sell_offer_id,
+                date_created : b.date_created,
+                date_updated : b.date_updated,
+                price : b.price,
+                accepted : b.accepted,
+            }
+        )
+    }).collect();
+
+
+    if offers.is_err() {
+
+        return Ok(BuyOffersWithParamsResponse::empty_response())
+    
+    }
+
+    let offers = offers.unwrap();
+
+    let res : (Vec<BuyOffer>,usize) = filter_buy_offer_result(offers, accepted, start, limit);
+
+    Ok(BuyOffersWithParamsResponse {
+        offers: res.0,
+        total : Some(res.1.try_into().unwrap_or(0)),
+        start : start,
+        limit : limit
+    })
+    
+}
+
+
+
+pub fn get_buy_offers_of(deps : Deps,
+    owner : Addr, 
+    accepted : Option<bool>,
+    start: Option<u32>, limit: Option<u32>) 
+    ->StdResult<BuyOffersWithParamsResponse> {    
+   
+    let offers : StdResult<Vec<BuyOffer>> = 
+
+    buy_offers_store()
+    .idx.offers
+    .prefix(owner)
+    .range(deps.storage, None, None, Order::Ascending)
+    .map(|offer| {
+        
+        let (_k, b) = offer?;
+        Ok (
+            BuyOffer { 
+                owner :b.owner,
+                sell_offer_id : b.sell_offer_id,
+                date_created : b.date_created,
+                date_updated : b.date_updated,
+                price : b.price,
+                accepted : b.accepted,
+            }
+        )
+    }).collect();
+
+
+    if offers.is_err() {
+
+        return Ok(BuyOffersWithParamsResponse::empty_response())
+    
+    }
+
+    let offers = offers.unwrap();
+
+    let res : (Vec<BuyOffer>,usize) = filter_buy_offer_result(offers, accepted, start, limit);
+
+    Ok(BuyOffersWithParamsResponse {
+        offers: res.0,
+        total : Some(res.1.try_into().unwrap_or(0)),
+        start : start,
+        limit : limit
+    })
+    
+}
+
+
+fn filter_buy_offer_result(
+    offers : Vec<BuyOffer>, 
+    accepted : Option<bool>,
+    start : Option<u32>,
+    limit: Option<u32>) -> (Vec<BuyOffer>,usize){
+
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+
+    let skip = start.unwrap_or(0) as usize ;
+    
+    let res = filter_buy_offer_result_all(offers, accepted);
+
+    (res.clone()
+    .into_iter()
+    .skip(skip)
+    .take(limit)
+    .collect::<Vec<BuyOffer>>(), res.len())
+}
+
+fn filter_buy_offer_result_all(offers : Vec<BuyOffer>, 
+    accepted : Option<bool>) -> Vec<BuyOffer>{
+   
+    if  accepted.is_some() {
+
+        offers.into_iter().filter(|b| 
+        b.accepted == accepted.unwrap())
+        .collect::<Vec<BuyOffer>>()
+    }
+    else {
+
+       offers      
+    }
+
 }

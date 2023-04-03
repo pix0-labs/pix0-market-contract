@@ -290,8 +290,10 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     let mut buy_offer  = buy_offer;
     buy_offer.owner = owner.clone();
+    buy_offer.sell_offer_id = sell_offer_id.clone();
     buy_offer.date_created = Some(_env.block.time);
     buy_offer.date_updated = buy_offer.date_created;
+    buy_offer.accepted = false ;
 
     check_buy_offer_exists( deps.as_ref(), &owner, sell_offer_id.clone(), true)?;
 

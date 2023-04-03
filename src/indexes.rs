@@ -1,6 +1,6 @@
 use crate::state::{ SellOffer, PurchaseHistory, BuyOffer};
 use cosmwasm_std::Addr;
-use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map};
+use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map, MultiIndex};
 
 pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::new("PIX0_PHIST_STORE");
 
@@ -42,6 +42,8 @@ pub fn sell_offers_store<'a>() -> IndexedMap<'a,(Addr,String), SellOffer, SellOf
 pub struct BuyOfferIndexes<'a> {
 
     pub offers : UniqueIndex<'a, (Addr,String), BuyOffer>,
+
+    pub sell_offers : MultiIndex<'a, String, BuyOffer, (Addr,String)>,
 }
 
 
@@ -50,7 +52,7 @@ impl IndexList<BuyOffer> for BuyOfferIndexes<'_> {
 
     fn get_indexes(&'_ self) -> Box<dyn Iterator<Item = &'_ dyn Index<BuyOffer>> + '_> {
 
-        let v : Vec<&dyn Index<BuyOffer>> = vec![&self.offers];
+        let v : Vec<&dyn Index<BuyOffer>> = vec![&self.offers, &self.sell_offers];
         Box::new(v.into_iter())
     } 
 }
@@ -61,6 +63,11 @@ pub fn buy_offers_store<'a>() -> IndexedMap<'a,(Addr,String), BuyOffer, BuyOffer
 
         offers : UniqueIndex::new(|s| (s.owner.clone(),
         s.sell_offer_id.clone()), "BUY_OFFERS"),
+
+        sell_offers : MultiIndex::new(|s| 
+        (s.sell_offer_id.clone()), 
+        "BUY_OFFERS_SOIDS",
+        "BUY_OFFERS_SELL_OFFERS"),
 
     };
 
