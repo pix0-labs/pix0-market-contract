@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Env, Response, MessageInfo, Addr};
+use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::sell_offers_store;
 use crate::error::ContractError;
@@ -28,7 +28,7 @@ pub fn update_contract_info (deps: DepsMut,
 }
 
 
-pub fn sell_offer_exists( deps: &DepsMut, info: MessageInfo, token_id : String ) -> bool {
+pub fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String ) -> bool {
 
     let owner = info.clone().sender;
     
@@ -54,18 +54,37 @@ pub fn sell_offer_exists( deps: &DepsMut, info: MessageInfo, token_id : String )
 }
 
 
+fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, error_on_exists : bool ) -> Result<(), ContractError> {
+
+    if error_on_exists {
+        if sell_offer_exists(&deps, info.clone(), token_id.clone()) {
+
+            return Err(ContractError::SellOfferAlreadyExists { 
+                message: format!("SellOffer for {} already exists!",token_id).to_string() } );
+      
+        }
+        Ok(())
+    }
+    else {
+
+        if !sell_offer_exists(&deps, info.clone(), token_id.clone()) {
+
+            return Err(ContractError::SellOfferNotFound { 
+                message: format!("SellOffer for {} not found!",token_id).to_string() } );
+      
+        }
+        Ok(())
+    }
+   
+}
+
 
 pub fn create_sell_offer(mut deps: DepsMut, 
 _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractError> {
 
     let owner = info.clone().sender;
 
-    if sell_offer_exists(&deps, info.clone(), offer.token_id.clone()) {
-
-        return Err(ContractError::SellOfferAlreadyExists { 
-            message: format!("SellOffer for {} already exists!", offer.token_id.clone()).to_string() } );
-  
-    }
+    check_sell_offer_exists (&deps.as_ref(), &info, offer.token_id.clone(), true )?;
 
     let date_created = _env.block.time;
 
@@ -111,15 +130,9 @@ pub fn update_sell_offer(deps: DepsMut,
 
     let owner = info.clone().sender;
 
+    check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), false)?;
 
     let offer = internal_get_sell_offer(deps.as_ref(), owner.clone(), sell_offer.token_id.clone());
-
-    if offer.is_none () {
-
-        return Err(ContractError::SellOfferNotFound { 
-            message: format!("SellOffer for {} not found!", sell_offer.token_id.clone()).to_string() } );
-  
-    }
 
     let mut offer_to_update = offer.unwrap();
 
@@ -150,6 +163,8 @@ pub fn remove_sell_offer (
     token_id : String) -> Result<Response, ContractError> {
     
     let owner = info.clone().sender;
+    
+    check_sell_offer_exists (&deps.as_ref(), &info, token_id.clone(), false)?;
 
     let _key = (owner.clone(), token_id );
 
@@ -177,13 +192,9 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     let owner = info.clone().sender;
 
-    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
+    check_sell_offer_exists (&deps.as_ref(), &info, sell_offer_id.clone(), false)?;
 
-    if offer.is_none (){
-
-        return Err(ContractError::SellOfferNotFound { 
-            message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
-    }
+    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id);
 
     let mut sell_offer = offer.unwrap();
 
