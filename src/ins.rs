@@ -1,8 +1,8 @@
 use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
-use crate::indexes::sell_offers_store;
+use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
-use crate::query::{internal_get_sell_offer, internal_get_sell_offer_by_id};
+use crate::query::{internal_get_sell_offer, internal_get_sell_offer_by_id, internal_get_buy_offer};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -173,28 +173,35 @@ pub fn remove_sell_offer (
 }
 
 
-fn check_buy_offer_exists (owner : &Addr, sell_offer : &SellOffer, exists_on_error : bool) -> Result<(), ContractError> {
+fn check_buy_offer_exists (deps : Deps, owner : &Addr, sell_offer_id : String, exists_on_error : bool) -> Result<(), ContractError> {
 
-    let b = sell_offer.buy_offers
-    .iter()
-    .find(|b| b.owner == *owner);
+    let _key = (owner.clone(),sell_offer_id);
 
+    let stored_bo = BUY_OFFERS_STORE.key(_key.clone());
+    
+    let bo_result = stored_bo.may_load(deps.storage);
+    
     if exists_on_error {
 
-        if b.is_some() {
+        if bo_result.is_ok() {
+
             return Err(ContractError::BuyOfferAlreadyExists { 
                 message: format!("Buy Offer for {:?} already exists!", owner) } );
+      
         }
         Ok(())
+    
     }
     else {
 
-        if b.is_none() {
+        if bo_result.is_err() {
             return Err(ContractError::BuyOfferNotFound { 
                 message: format!("Buy Offer for {:?} NOT found!", owner) } );
+      
         }
         Ok(())
     }
+   
 }
 
 
@@ -282,14 +289,12 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     check_sell_offer_exists (&deps.as_ref(), &info, sell_offer_id.clone(), false)?;
 
-    let mut sell_offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id)?;
-
     let mut buy_offer  = buy_offer;
     buy_offer.owner = owner.clone();
     buy_offer.date_created = Some(_env.block.time);
     buy_offer.date_updated = buy_offer.date_created;
 
-    check_buy_offer_exists(&owner, &sell_offer, true)?;
+    check_buy_offer_exists( deps.as_ref(), &owner, sell_offer_id.clone(), true)?;
 
     let price = buy_offer.price.clone();
 
@@ -298,16 +303,13 @@ pub fn create_buy_offer(mut deps: DepsMut,
     let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
     info, "CREATE_BUY_OFFER_FEE")?;
  
-    sell_offer.buy_offers.push ( buy_offer);
+    let _key = (owner, sell_offer_id);
 
-    let _key = (owner, sell_offer.token_id.clone());
-
-    sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
+    BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &buy_offer)?;
    
     Ok(internal_transfer_to_escrow(_env, price, "create-buy-offer")
     .add_messages(bmsgs))
 } 
-
 
 pub fn update_buy_offer(deps: DepsMut, 
     _env : Env, info: MessageInfo,
@@ -316,36 +318,28 @@ pub fn update_buy_offer(deps: DepsMut,
 
     let owner = info.sender;
 
-    let mut sell_offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
-
-    check_buy_offer_exists(&owner, &sell_offer, false)?;
+    let mut bo = internal_get_buy_offer(deps.as_ref(), owner.clone(), sell_offer_id.clone())?;
 
     let mut amt_diff : Uint128 = Uint128::from(0u8);
     let mut recipient : Option<Addr> = None; 
 
-    for bo in sell_offer.buy_offers.iter_mut() {
+    if buy_offer.price.amount > bo.price.amount {
 
-        if bo.owner == owner.clone() {
+        amt_diff = buy_offer.price.amount - bo.price.amount;
+    }
+    else if buy_offer.price.amount < bo.price.amount {
 
-            if buy_offer.price.amount > bo.price.amount {
+        amt_diff = bo.price.amount - buy_offer.price.amount;
+        recipient = Some(owner.clone());
+    }
 
-                amt_diff = buy_offer.price.amount - bo.price.amount;
-            }
-            else if buy_offer.price.amount < bo.price.amount {
-
-                amt_diff = bo.price.amount - buy_offer.price.amount;
-                recipient = Some(owner.clone());
-            }
-
-            bo.price = buy_offer.price.clone();
-            bo.date_updated = Some(_env.block.time);
-        }
-    } 
+    bo.price = buy_offer.price.clone();
+    bo.date_updated = Some(_env.block.time);
 
 
-    let _key = (owner, sell_offer.token_id.clone());
+    let _key = (owner, sell_offer_id);
 
-    sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
+    BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &bo)?;
    
     Ok(refund_or_top_up(_env, amt_diff,
         buy_offer.price.denom, recipient, "update-buy-offer"))

@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
-use crate::indexes::sell_offers_store;
-use crate::state::SellOffer;
+use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
+use crate::state::{SellOffer, BuyOffer};
 use crate::error::ContractError;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse};
 use std::convert::TryInto;
@@ -161,6 +161,33 @@ pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -
 
         return Err(ContractError::SellOfferNotFound { 
             message: format!("Sell Offer {} not found!", offer_id).to_string() } );
+    }
+}
+
+#[allow(dead_code)]
+pub (crate) fn internal_get_buy_offer(deps: Deps, owner : Addr, sell_offer_id : String   ) -> Result<BuyOffer, ContractError>{
+
+    let _key = (owner.clone(),sell_offer_id.clone());
+
+    let stored_bo = BUY_OFFERS_STORE.key(_key.clone());
+    
+    let res = stored_bo.may_load(deps.storage);
+    
+    if res.is_ok() {
+
+        let v = res.ok();
+        if v.is_some() {
+            return Ok(v.unwrap().unwrap());
+        }
+        else {
+            return Err(ContractError::BuyOfferNotFound { 
+                message: format!("Buy Offer {} not found!", sell_offer_id).to_string() } );
+        }
+    }
+    else {
+
+        return Err(ContractError::BuyOfferNotFound { 
+            message: format!("Buy Offer {} not found!", sell_offer_id).to_string() } );
     }
 }
 
