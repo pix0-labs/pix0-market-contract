@@ -7,8 +7,8 @@ use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer, 
-update_buy_offer, cancel_buy_offer, update_sell_offer, remove_sell_offer};
-use crate::query::{get_sell_offers_of, get_sell_offer_by_id};
+update_buy_offer, cancel_buy_offer, update_sell_offer, remove_sell_offer, transfer_to_escrow};
+use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
 // version info for migration info
@@ -61,6 +61,8 @@ pub fn execute(
         ExecuteMsg::CancelBuyOffer { sell_offer_id } => 
         cancel_buy_offer(deps, _env,_info, sell_offer_id),
 
+        ExecuteMsg::TestTransferToEscrow { coin } => 
+        transfer_to_escrow(_env,coin),
 
     }
 }
@@ -75,6 +77,10 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetSellOfferById {
             offer_id
         } => to_binary(&get_sell_offer_by_id(_deps, offer_id)?),
+
+        QueryMsg::GetBalanceOfEscrow {
+            denom 
+        }  => to_binary(&get_balance_of_escrow(_deps, _env, denom)?),
 
     }
 }

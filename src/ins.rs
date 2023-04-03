@@ -242,8 +242,7 @@ fn send_tokens(to_address: Addr, amount: Vec<Coin>, action: &str) -> Response {
     .add_attribute("to", to_address)
 }
 
-#[allow(dead_code)]
-pub (crate) fn transfer_to_escrow(env : Env, coin : Coin) -> Result<Response, ContractError> {
+pub fn transfer_to_escrow(env : Env, coin : Coin) -> Result<Response, ContractError> {
 
     Ok(send_tokens(env.contract.address, vec![coin], "transfer-to-escrow"))
 }

@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use crate::state::{SellOffer, BuyOffer};
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, Coin};
 use pix0_contract_common::state::{Fee, Contract};
 
 
@@ -58,6 +58,10 @@ pub enum ExecuteMsg {
 
     },
 
+    TestTransferToEscrow {
+        coin : Coin,
+    },
+
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -77,6 +81,11 @@ pub enum QueryMsg {
     GetSellOfferById {
 
         offer_id : String,
+    },
+
+    GetBalanceOfEscrow {
+
+        denom : String, 
     }
 
 
@@ -114,4 +123,12 @@ impl SellOffersWithParamsResponse {
 pub struct SellOfferResponse {
 
     pub offer : Option<SellOffer>,
+}
+
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct BalanceResponse {
+
+    pub amount : Option<Coin>,
 }

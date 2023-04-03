@@ -1,7 +1,7 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
 use crate::indexes::sell_offers_store;
 use crate::state::SellOffer;
-use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse};
+use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse};
 use std::convert::TryInto;
 
 pub const DEFAULT_LIMIT : u32 = 10;
@@ -145,8 +145,7 @@ pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -
 }
 
 
-#[allow(dead_code)]
-pub (crate) fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) ->Option<Coin> {
+pub (crate) fn internal_get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) ->Option<Coin> {
 
     let balance = deps.querier.query_balance(&env.contract.address, denom);
 
@@ -157,4 +156,13 @@ pub (crate) fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<St
 
         None 
     }
+}
+
+
+pub fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) -> StdResult<BalanceResponse> {
+
+   
+    Ok(BalanceResponse{
+        amount : internal_get_balance_of_escrow(deps, env, denom)
+    })
 }
