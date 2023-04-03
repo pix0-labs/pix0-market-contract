@@ -9,10 +9,8 @@ pub const BUY_OFFERS_STORE : Map<(Addr,String), BuyOffer> = Map::new("PIX0_BUY_O
 
 pub struct SellOfferIndexes<'a> {
 
-    // unique index by wallet address
     pub offers : UniqueIndex<'a, (Addr,String), SellOffer>,
 
-    // unique index by name and symbols
     pub offers_by_id : UniqueIndex<'a, String, SellOffer>,
 }
 
