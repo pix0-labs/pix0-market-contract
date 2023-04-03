@@ -65,7 +65,6 @@ mod tests {
                 offer_id : None,//Some(oid),
                 price : price, 
                 status : 0,
-                buy_offers : vec![],
                 allowed_direct_buy : true, 
                 deal_close_type : None,
                 date_created : None,

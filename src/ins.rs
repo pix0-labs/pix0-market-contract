@@ -2,7 +2,7 @@ use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coi
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
-use crate::query::{internal_get_sell_offer, internal_get_sell_offer_by_id, internal_get_buy_offer};
+use crate::query::{internal_get_sell_offer, internal_get_buy_offer};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -97,7 +97,6 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
         owner : owner.clone(),
         token_id : offer.token_id.clone(),
         offer_id : offer_id,
-        buy_offers : vec![],
         price : offer.price,
         collection_info : offer.collection_info,
         allowed_direct_buy : offer.allowed_direct_buy,
@@ -346,19 +345,9 @@ pub fn update_buy_offer(deps: DepsMut,
 } 
 
 
-fn refund_buy_offer(sell_offer : &SellOffer, _env : Env, owner : Addr, action : &str)  -> Result<Response, ContractError>{
+fn refund_buy_offer(buy_offer : &BuyOffer, _env : Env, owner : Addr, action : &str)  -> Result<Response, ContractError>{
 
-  
-    let buy_offer = sell_offer.buy_offers
-    .iter()
-    .find(|b| b.owner == owner.clone());
-
-    if buy_offer.is_none() {
-        return Err(ContractError::BuyOfferNotFound { 
-            message: format!("Buy Offer for {:?} NOT found!", owner.clone()) } );
-    }
-
-    let price = buy_offer.unwrap().price.clone();
+    let price = buy_offer.price.clone();
     
     Ok (refund_or_top_up(_env, price.amount, 
     price.denom, Some(owner), action))
@@ -371,15 +360,13 @@ pub fn cancel_buy_offer(deps: DepsMut,
 
     let owner = info.sender;
 
-    let mut sell_offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
+    let bo = internal_get_buy_offer(deps.as_ref(), owner.clone(), sell_offer_id.clone())?;
 
-    sell_offer.buy_offers.retain(|b| b.owner != owner.clone() );
+    let _key = (owner.clone(), sell_offer_id);
 
-    let _key = (owner.clone(), sell_offer.token_id.clone());
-
-    sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
+    BUY_OFFERS_STORE.remove(deps.storage, _key.clone());
    
-    let res = refund_buy_offer(&sell_offer, _env,owner, "cancel-buy-offer")?;   
+    let res = refund_buy_offer(&bo, _env,owner, "cancel-buy-offer")?;   
 
     Ok(res)
 } 

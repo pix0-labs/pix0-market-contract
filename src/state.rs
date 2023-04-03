@@ -38,8 +38,6 @@ pub struct SellOffer {
 
     pub price : Coin, 
 
-    pub buy_offers : Vec<BuyOffer>,
-
     pub allowed_direct_buy : bool,
 
     pub status : u8, 
