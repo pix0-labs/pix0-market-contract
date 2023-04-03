@@ -1,4 +1,4 @@
-use cosmwasm_std::{Deps, StdResult, Order, Addr };
+use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
 use crate::indexes::sell_offers_store;
 use crate::state::SellOffer;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse};
@@ -141,5 +141,20 @@ pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -
     else {
 
         None
+    }
+}
+
+
+#[allow(dead_code)]
+pub (crate) fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) ->Option<Coin> {
+
+    let balance = deps.querier.query_balance(&env.contract.address, denom);
+
+    if balance.is_ok() {
+        balance.ok()
+    }
+    else {
+
+        None 
     }
 }

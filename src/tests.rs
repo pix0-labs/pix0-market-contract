@@ -112,4 +112,29 @@ mod tests {
         
     }
 
+
+      // cargo test test_send_to_escrow -- --show-output
+      #[test]
+      fn test_send_to_escrow(){
+  
+          //let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
+  
+          let deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
+          //let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
+          let env = mock_env();
+
+          let balance = get_balance_of_escrow(deps.as_ref(), env.clone(), DEFAULT_PRICE_DENOM);
+          println!("Balance before sent:{:?}", balance);
+
+          let amt = Coin { amount : Uint128::from(1280u64), denom : DEFAULT_PRICE_DENOM.to_string()};
+
+          let res = transfer_to_escrow(env.clone(),amt );
+          println!("Sent.to.escrow:{:?}", res);
+
+          let balance = get_balance_of_escrow(deps.as_ref(), env, DEFAULT_PRICE_DENOM);
+          println!("Balance after sent:{:?}", balance);
+
+
+      }
+
 }

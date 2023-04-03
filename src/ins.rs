@@ -248,19 +248,6 @@ pub (crate) fn transfer_to_escrow(env : Env, coin : Coin) -> Result<Response, Co
     Ok(send_tokens(env.contract.address, vec![coin], "transfer-to-escrow"))
 }
 
-#[allow(dead_code)]
-pub (crate) fn get_balance_of_escrow(deps: Deps, env : Env, denom : impl Into<String> ) ->Option<Coin> {
-
-    let balance = deps.querier.query_balance(&env.contract.address, denom);
-
-    if balance.is_ok() {
-        balance.ok()
-    }
-    else {
-
-        None 
-    }
-}
 
 
 pub fn create_buy_offer(mut deps: DepsMut, 
