@@ -69,6 +69,8 @@ pub struct BuyOffer {
 
     pub owner : Addr,
 
+    pub sell_offer_id : String,
+    
     pub price : Coin, 
 
     pub accepted : bool, 

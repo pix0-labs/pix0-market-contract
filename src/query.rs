@@ -1,5 +1,5 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
-use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
+use crate::indexes::{sell_offers_store, buy_offers_store};
 use crate::state::{SellOffer, BuyOffer};
 use crate::error::ContractError;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse};
@@ -168,7 +168,7 @@ pub (crate) fn internal_get_buy_offer(deps: Deps, owner : Addr, sell_offer_id : 
 
     let _key = (owner.clone(),sell_offer_id.clone());
 
-    let stored_bo = BUY_OFFERS_STORE.key(_key.clone());
+    let stored_bo = buy_offers_store().key(_key.clone());
     
     let res = stored_bo.may_load(deps.storage);
     

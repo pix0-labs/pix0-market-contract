@@ -4,8 +4,6 @@ use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map};
 
 pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::new("PIX0_PHIST_STORE");
 
-pub const BUY_OFFERS_STORE : Map<(Addr,String), BuyOffer> = Map::new("PIX0_BUY_OFFERS_STORE");
-
 
 pub struct SellOfferIndexes<'a> {
 
@@ -36,5 +34,36 @@ pub fn sell_offers_store<'a>() -> IndexedMap<'a,(Addr,String), SellOffer, SellOf
     };
 
     IndexedMap::new("SELL_OFFERS_STORE", indexes)
+}
+
+
+
+
+pub struct BuyOfferIndexes<'a> {
+
+    pub offers : UniqueIndex<'a, (Addr,String), BuyOffer>,
+}
+
+
+
+impl IndexList<BuyOffer> for BuyOfferIndexes<'_> {
+
+    fn get_indexes(&'_ self) -> Box<dyn Iterator<Item = &'_ dyn Index<BuyOffer>> + '_> {
+
+        let v : Vec<&dyn Index<BuyOffer>> = vec![&self.offers];
+        Box::new(v.into_iter())
+    } 
+}
+
+pub fn buy_offers_store<'a>() -> IndexedMap<'a,(Addr,String), BuyOffer, BuyOfferIndexes<'a>> {
+
+    let indexes = BuyOfferIndexes {
+
+        offers : UniqueIndex::new(|s| (s.owner.clone(),
+        s.sell_offer_id.clone()), "BUY_OFFERS"),
+
+    };
+
+    IndexedMap::new("BUY_OFFERS_STORE", indexes)
 }
 

@@ -1,6 +1,6 @@
 use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
-use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
+use crate::indexes::{sell_offers_store, buy_offers_store};
 use crate::error::ContractError;
 use crate::query::{internal_get_sell_offer, internal_get_buy_offer};
 use pix0_contract_common::state::{Contract,Fee};
@@ -176,7 +176,7 @@ fn check_buy_offer_exists (deps : Deps, owner : &Addr, sell_offer_id : String, e
 
     let _key = (owner.clone(),sell_offer_id);
 
-    let stored_bo = BUY_OFFERS_STORE.key(_key.clone());
+    let stored_bo = buy_offers_store().key(_key.clone());
     
     let bo_result = stored_bo.may_load(deps.storage);
     
@@ -304,7 +304,7 @@ pub fn create_buy_offer(mut deps: DepsMut,
  
     let _key = (owner, sell_offer_id);
 
-    BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &buy_offer)?;
+    buy_offers_store().save(deps.storage, _key.clone(), &buy_offer)?;
    
     Ok(internal_transfer_to_escrow(_env, price, "create-buy-offer")
     .add_messages(bmsgs))
@@ -338,7 +338,7 @@ pub fn update_buy_offer(deps: DepsMut,
 
     let _key = (owner, sell_offer_id);
 
-    BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &bo)?;
+    buy_offers_store().save(deps.storage, _key.clone(), &bo)?;
    
     Ok(refund_or_top_up(_env, amt_diff,
         buy_offer.price.denom, recipient, "update-buy-offer"))
@@ -364,9 +364,22 @@ pub fn cancel_buy_offer(deps: DepsMut,
 
     let _key = (owner.clone(), sell_offer_id);
 
-    BUY_OFFERS_STORE.remove(deps.storage, _key.clone());
+    let _res = buy_offers_store().remove(deps.storage, _key.clone());
    
-    let res = refund_buy_offer(&bo, _env,owner, "cancel-buy-offer")?;   
+    match _res {
 
-    Ok(res)
+        Ok(_)=>{
+
+            let res = refund_buy_offer(&bo, _env,owner, "cancel-buy-offer")?;   
+            Ok(res)
+        },
+
+        Err(e)=>{
+
+            return Err(ContractError::FailedToRemove { 
+                message: format!("Failed to remove buy offer,, error:{:?}!", e).to_string() } );
+       
+        }
+    }
+   
 } 

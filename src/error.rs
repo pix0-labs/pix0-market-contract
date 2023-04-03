@@ -38,6 +38,9 @@ pub enum ContractError {
     #[error("InvalidRequiredFund")]
     InvalidRequiredFund { message : String },
 
+    #[error("FailedToRemove")]
+    FailedToRemove { message : String },
+
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
 }
