@@ -404,7 +404,7 @@ dependencies = [
 
 [[package]]
 name = "pix0-market-contract"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",

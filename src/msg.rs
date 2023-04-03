@@ -25,6 +25,17 @@ pub enum ExecuteMsg {
         offer : SellOffer,
     },
 
+    UpdateSellOffer {
+
+        offer : SellOffer,
+    },
+
+
+    RemoveSellOffer {
+
+        token_id : String,
+    },
+
     CreateBuyOffer {
 
         buy_offer : BuyOffer,

@@ -143,6 +143,24 @@ pub fn update_sell_offer(deps: DepsMut,
 }
 
 
+
+pub fn remove_sell_offer (
+    mut deps: DepsMut ,  
+    info: MessageInfo,
+    token_id : String) -> Result<Response, ContractError> {
+    
+    let owner = info.clone().sender;
+
+    let _key = (owner.clone(), token_id );
+
+    sell_offers_store().remove(deps.branch().storage, _key.clone())?;
+
+    Ok(Response::new()
+    .add_attribute("method", "remove-sell-offer"))  
+
+}
+
+
 fn buy_offer_exists (owner : &Addr, sell_offer : &SellOffer) -> bool {
 
     let b = sell_offer.buy_offers

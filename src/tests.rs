@@ -10,7 +10,8 @@ mod tests {
     use pix0_contract_common::state::*;
    // use crate::ins::*;
     use crate::query::*;
-   
+    use crate::ins::*;
+
 
     const DEFAULT_PRICE_DENOM : &str = "uconst";
    
@@ -90,11 +91,16 @@ mod tests {
 
         }
 
+
+        let res = remove_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_005"));
+
+        println!("Removed.res:{:?}\n",res);
+
         let res = get_sell_offers_of(deps.as_ref(), Addr::unchecked(owner), None, None, None);
 
-        for o in res.ok().unwrap().offers {
+        for (index, o) in res.ok().unwrap().offers.iter().enumerate() {
 
-            println!("Offer.id::{:?}", o.offer_id);
+            println!("{}: Offer.id::{:?}::tok.id:{:?}",(index+1), o.offer_id, o.token_id);
         }
 
     
