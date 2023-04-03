@@ -136,7 +136,7 @@ mod tests {
           let balance = get_balance_of_escrow(deps.as_ref(), mock_env(), DEFAULT_PRICE_DENOM);
           println!("Balance after sent:{:?}", balance);
 
-
+        
       }
 
 }

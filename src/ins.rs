@@ -242,16 +242,37 @@ fn send_tokens(to_address: Addr, amount: Vec<Coin>, action: &str) -> Response {
     .add_attribute("to", to_address)
 }
 
+
+fn internal_transfer_to_escrow (env : Env, coin : Coin, action : &str ) -> Response {
+
+    send_tokens(env.contract.address, vec![coin], action)
+}
+
 pub fn transfer_to_escrow(env : Env, coin : Coin) -> Result<Response, ContractError> {
 
-    Ok(send_tokens(env.contract.address, vec![coin], "transfer-to-escrow"))
+    Ok(internal_transfer_to_escrow(env, coin, "transfer-to-escrow"))
+}
+
+fn refund_or_top_up (env : Env, amount : Uint128, denom : String, 
+    recipient : Option<Addr>, action : &str) -> Response{
+
+    let coin = Coin {
+        amount : amount,
+        denom : denom
+    };
+
+    if recipient.is_some() {
+        internal_transfer_from_escrow(recipient.unwrap(), coin, action)
+    }
+    else {
+        internal_transfer_to_escrow(env, coin, action )
+    }
 }
 
 
+fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -> Response {
 
-pub fn transfer_from_escrow(recipient : Addr, coin : Coin) -> Result<Response, ContractError> {
-
-    Ok(send_tokens(recipient, vec![coin], "transfer-from-escrow"))
+    send_tokens(recipient, vec![coin],action)
 }
 
 
@@ -275,7 +296,9 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     check_buy_offer_exists(&owner, &sell_offer, true)?;
 
-    check_is_fund_sufficient(info.clone(), buy_offer.price.clone())?;
+    let price = buy_offer.price.clone();
+
+    check_is_fund_sufficient(info.clone(), price.clone())?;
 
     let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
     info, "CREATE_BUY_OFFER_FEE")?;
@@ -286,8 +309,7 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
    
-    Ok(Response::new()
-    .add_attribute("action", "create-buy-offer")
+    Ok(internal_transfer_to_escrow(_env, price, "create-buy-offer")
     .add_messages(bmsgs))
 } 
 
@@ -310,23 +332,55 @@ pub fn update_buy_offer(deps: DepsMut,
 
     check_buy_offer_exists(&owner, &sell_offer, false)?;
 
-   
+    let mut amt_diff : Uint128 = Uint128::from(0u8);
+    let mut recipient : Option<Addr> = None; 
+
     for bo in sell_offer.buy_offers.iter_mut() {
 
         if bo.owner == owner.clone() {
+
+            if buy_offer.price.amount > bo.price.amount {
+
+                amt_diff = buy_offer.price.amount - bo.price.amount;
+            }
+            else if buy_offer.price.amount < bo.price.amount {
+
+                amt_diff = bo.price.amount - buy_offer.price.amount;
+                recipient = Some(owner.clone());
+            }
+
             bo.price = buy_offer.price.clone();
             bo.date_updated = Some(_env.block.time);
         }
     } 
 
+
     let _key = (owner, sell_offer.token_id.clone());
 
     sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
    
-
-    Ok(Response::new()
-    .add_attribute("action", "update-buy-offer"))
+    Ok(refund_or_top_up(_env, amt_diff,
+        buy_offer.price.denom, recipient, "update-buy-offer"))
 } 
+
+
+fn refund_buy_offer(sell_offer : &SellOffer, _env : Env, owner : Addr)  -> Result<Response, ContractError>{
+
+  
+    let buy_offer = sell_offer.buy_offers
+    .iter()
+    .find(|b| b.owner == owner.clone());
+
+    if buy_offer.is_none() {
+        return Err(ContractError::BuyOfferNotFound { 
+            message: format!("Buy Offer for {:?} NOT found!", owner.clone()) } );
+    }
+
+    let price = buy_offer.unwrap().price.clone();
+    
+    Ok (refund_or_top_up(_env, price.amount, 
+    price.denom, Some(owner), "cancel-buy-offer"))
+}
 
 
 pub fn cancel_buy_offer(deps: DepsMut, 
@@ -345,18 +399,13 @@ pub fn cancel_buy_offer(deps: DepsMut,
 
     let mut sell_offer = offer.unwrap();
 
- 
-    check_buy_offer_exists(&owner, &sell_offer, false)?;
-
-
     sell_offer.buy_offers.retain(|b| b.owner != owner.clone() );
 
-
-    let _key = (owner, sell_offer.token_id.clone());
+    let _key = (owner.clone(), sell_offer.token_id.clone());
 
     sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
    
+    let res = refund_buy_offer(&sell_offer, _env,owner)?;   
 
-    Ok(Response::new()
-    .add_attribute("action", "cancel-buy-offer"))
+    Ok(res)
 } 
