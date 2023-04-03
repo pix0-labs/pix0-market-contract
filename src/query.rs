@@ -1,6 +1,7 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
 use crate::indexes::sell_offers_store;
 use crate::state::SellOffer;
+use crate::error::ContractError;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse};
 use std::convert::TryInto;
 
@@ -98,14 +99,24 @@ fn filter_sell_offer_result_all(offers : Vec<SellOffer>,
 
 pub fn get_sell_offer_by_id(deps: Deps, offer_id : String ) -> StdResult<SellOfferResponse>{
 
-    Ok( SellOfferResponse {
-        offer :internal_get_sell_offer_by_id(deps,offer_id)
-    })
+    let offer = internal_get_sell_offer_by_id(deps,offer_id);
+
+    if offer.is_ok() {
+        Ok( SellOfferResponse {
+            offer : Some(offer.ok().unwrap())
+        })
+    }
+    else {
+        Ok( SellOfferResponse {
+            offer : None 
+        })
+    }
+   
 } 
 
-pub (crate) fn internal_get_sell_offer(deps: Deps, owner : Addr, token_id : String  ) -> Option<SellOffer>{
+pub (crate) fn internal_get_sell_offer(deps: Deps, owner : Addr, token_id : String  ) -> Result<SellOffer, ContractError>{
 
-    let _key = (owner, token_id );
+    let _key = (owner, token_id.clone() );
 
     let stored_sell_offer = sell_offers_store().key(_key);
     
@@ -113,34 +124,43 @@ pub (crate) fn internal_get_sell_offer(deps: Deps, owner : Addr, token_id : Stri
 
     if res.is_ok() {
 
-        let value = res.unwrap_or_else(|_| {
-            None
-        });
+        let v = res.ok();
+        if v.is_some() {
 
-        value 
+            return Ok(v.unwrap().unwrap());
+        }
+        else {
+            return Err(ContractError::SellOfferNotFound { 
+                message: format!("Sell Offer for {} not found!", token_id).to_string() } );
+        }
     }
     else {
 
-        None
+        return Err(ContractError::SellOfferNotFound { 
+            message: format!("Sell Offer for {} not found!", token_id).to_string() } );
     }
 }
 
 #[allow(dead_code)]
-pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -> Option<SellOffer>{
+pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -> Result<SellOffer, ContractError>{
 
-    let res =  sell_offers_store().idx.offers_by_id.item(deps.storage, offer_id);
+    let res =  sell_offers_store().idx.offers_by_id.item(deps.storage, offer_id.clone());
     
     if res.is_ok() {
 
-        let value = res.unwrap_or_else(|_| {
-            None
-        });
-
-        Some(value.unwrap().1)
+        let v = res.ok();
+        if v.is_some() {
+            return Ok(v.unwrap().unwrap().1);
+        }
+        else {
+            return Err(ContractError::SellOfferNotFound { 
+                message: format!("Sell Offer {} not found!", offer_id).to_string() } );
+        }
     }
     else {
 
-        None
+        return Err(ContractError::SellOfferNotFound { 
+            message: format!("Sell Offer {} not found!", offer_id).to_string() } );
     }
 }
 

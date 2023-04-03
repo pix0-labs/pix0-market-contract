@@ -132,10 +132,7 @@ pub fn update_sell_offer(deps: DepsMut,
 
     check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), false)?;
 
-    let offer = internal_get_sell_offer(deps.as_ref(), owner.clone(), sell_offer.token_id.clone());
-
-    let mut offer_to_update = offer.unwrap();
-
+    let mut offer_to_update = internal_get_sell_offer(deps.as_ref(), owner.clone(), sell_offer.token_id.clone())?;
     
     offer_to_update.price = sell_offer.price;
     offer_to_update.allowed_direct_buy = sell_offer.allowed_direct_buy;
@@ -285,9 +282,7 @@ pub fn create_buy_offer(mut deps: DepsMut,
 
     check_sell_offer_exists (&deps.as_ref(), &info, sell_offer_id.clone(), false)?;
 
-    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id);
-
-    let mut sell_offer = offer.unwrap();
+    let mut sell_offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id)?;
 
     let mut buy_offer  = buy_offer;
     buy_offer.owner = owner.clone();
@@ -321,14 +316,7 @@ pub fn update_buy_offer(deps: DepsMut,
 
     let owner = info.sender;
 
-    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
-
-    if offer.is_none (){
-        return Err(ContractError::SellOfferNotFound { 
-            message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
-    }
-
-    let mut sell_offer = offer.unwrap();
+    let mut sell_offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
 
     check_buy_offer_exists(&owner, &sell_offer, false)?;
 
@@ -389,15 +377,7 @@ pub fn cancel_buy_offer(deps: DepsMut,
 
     let owner = info.sender;
 
-    let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
-
-    if offer.is_none (){
-
-        return Err(ContractError::SellOfferNotFound { 
-            message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
-    }
-
-    let mut sell_offer = offer.unwrap();
+    let mut sell_offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
 
     sell_offer.buy_offers.retain(|b| b.owner != owner.clone() );
 
