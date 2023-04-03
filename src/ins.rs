@@ -364,7 +364,7 @@ pub fn update_buy_offer(deps: DepsMut,
 } 
 
 
-fn refund_buy_offer(sell_offer : &SellOffer, _env : Env, owner : Addr)  -> Result<Response, ContractError>{
+fn refund_buy_offer(sell_offer : &SellOffer, _env : Env, owner : Addr, action : &str)  -> Result<Response, ContractError>{
 
   
     let buy_offer = sell_offer.buy_offers
@@ -379,7 +379,7 @@ fn refund_buy_offer(sell_offer : &SellOffer, _env : Env, owner : Addr)  -> Resul
     let price = buy_offer.unwrap().price.clone();
     
     Ok (refund_or_top_up(_env, price.amount, 
-    price.denom, Some(owner), "cancel-buy-offer"))
+    price.denom, Some(owner), action))
 }
 
 
@@ -405,7 +405,7 @@ pub fn cancel_buy_offer(deps: DepsMut,
 
     sell_offers_store().save(deps.storage, _key.clone(), &sell_offer)?;
    
-    let res = refund_buy_offer(&sell_offer, _env,owner)?;   
+    let res = refund_buy_offer(&sell_offer, _env,owner, "cancel-buy-offer")?;   
 
     Ok(res)
 } 
