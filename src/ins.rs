@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr};
+use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::sell_offers_store;
 use crate::error::ContractError;
@@ -176,13 +176,58 @@ pub fn remove_sell_offer (
 }
 
 
-fn buy_offer_exists (owner : &Addr, sell_offer : &SellOffer) -> bool {
+fn check_buy_offer_exists (owner : &Addr, sell_offer : &SellOffer, exists_on_error : bool) -> Result<(), ContractError> {
 
     let b = sell_offer.buy_offers
     .iter()
     .find(|b| b.owner == *owner);
 
-    return b.is_some();
+    if exists_on_error {
+
+        if b.is_some() {
+            return Err(ContractError::BuyOfferAlreadyExists { 
+                message: format!("Buy Offer for {:?} already exists!", owner) } );
+        }
+        Ok(())
+    }
+    else {
+
+        if b.is_none() {
+            return Err(ContractError::BuyOfferNotFound { 
+                message: format!("Buy Offer for {:?} NOT found!", owner) } );
+        }
+        Ok(())
+    }
+}
+
+
+fn check_is_fund_sufficient (info : MessageInfo, required_fund : Coin) -> Result<(), ContractError> {
+
+    let sent_funds: Vec<Coin> = info.funds.clone();
+
+    if required_fund.amount == Uint128::from(0u8) {
+        return Err(ContractError::InvalidRequiredFund { 
+            message: String::from("Required fund cannot be zero!")} 
+        );
+    }
+
+    if sent_funds.len() == 0 {
+        return Err(ContractError::InsufficientFund { 
+            message: format!("Sent fund 0{} is less than required {}{}!",
+            required_fund.denom, required_fund.amount, required_fund.denom) } );
+    }
+
+    let first_fund = sent_funds.get(0).unwrap();
+
+    if first_fund.amount < Uint128::from(required_fund.amount) ||
+    first_fund.denom != required_fund.denom {
+        return Err(ContractError::InsufficientFund { 
+            message: format!("Sent fund {}{} is less than required {}{}!",first_fund.amount,
+        first_fund.denom, required_fund.amount, required_fund.denom) } );
+    }
+    else {
+        Ok(())
+    }
 }
 
 pub fn create_buy_offer(mut deps: DepsMut, 
@@ -203,15 +248,12 @@ pub fn create_buy_offer(mut deps: DepsMut,
     buy_offer.date_created = Some(_env.block.time);
     buy_offer.date_updated = buy_offer.date_created;
 
-    if buy_offer_exists(&owner, &sell_offer) {
+    check_buy_offer_exists(&owner, &sell_offer, true)?;
 
-        return Err(ContractError::BuyOfferAlreadyExists { 
-            message: format!("Buy Offer for {:?} already exists!", owner) } );
-        
-    } 
+    check_is_fund_sufficient(info.clone(), buy_offer.price.clone())?;
 
     let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
-    info, "CREATE_BUYL_OFFER_FEE")?;
+    info, "CREATE_BUY_OFFER_FEE")?;
  
     sell_offer.buy_offers.push ( buy_offer);
 
@@ -235,19 +277,13 @@ pub fn update_buy_offer(deps: DepsMut,
     let offer = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone());
 
     if offer.is_none (){
-
         return Err(ContractError::SellOfferNotFound { 
             message: format!("Sell Offer for {} not found!", sell_offer_id).to_string() } );
     }
 
     let mut sell_offer = offer.unwrap();
 
-    if !buy_offer_exists(&owner.clone(), &sell_offer) {
-
-        return Err(ContractError::BuyOfferNotFound { 
-            message: format!("Buy Offer for {:?} not found!", owner.clone()) } );
-        
-    } 
+    check_buy_offer_exists(&owner, &sell_offer, false)?;
 
    
     for bo in sell_offer.buy_offers.iter_mut() {
@@ -285,12 +321,8 @@ pub fn cancel_buy_offer(deps: DepsMut,
     let mut sell_offer = offer.unwrap();
 
  
-    if !buy_offer_exists(&owner.clone(), &sell_offer) {
+    check_buy_offer_exists(&owner, &sell_offer, false)?;
 
-        return Err(ContractError::BuyOfferNotFound { 
-            message: format!("Buy Offer for {:?} not found!", owner.clone()) } );
-        
-    } 
 
     sell_offer.buy_offers.retain(|b| b.owner != owner.clone() );
 
