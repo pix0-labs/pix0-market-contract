@@ -5,7 +5,24 @@
     "archwayd": {
       "docker": false
     },
-    "deployments": [],
+    "deployments": [
+      {
+        "project": "pix0-market-contract",
+        "type": "instantiate",
+        "chainId": "constantine-1",
+        "codeId": 338,
+        "txhash": "B50BEF643261979970192D3871F538DE080843916A7F71819F30F0FC5D2A1281",
+        "address": "archway1nyq89sg0sfz22efy02n56pksuyglsxt77uy9w0wscqkn92eez98quc2y7r",
+        "admin": "archway12pcytur9del2t5wm93t8kuqakvf9yk9wzt4w0x"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "store",
+        "chainId": "constantine-1",
+        "codeId": 338,
+        "txhash": "9728C3EC888D56CFF399DDDEE9D942D9F2AA5FF50E21CEE8EF5C9A4C56FA3079"
+      }
+    ],
     "scripts": {
       "test": "cargo unit-test",
       "build": "cargo build",
