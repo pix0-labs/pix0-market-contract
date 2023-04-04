@@ -1,7 +1,7 @@
 [package]
 name = "pix0-market-contract"
 version = "0.4.2"
-authors = ["techchee <ketyung@techchee.com>"]
+authors = ["Christopher Chee <ketyung@techchee.com>"]
 edition = "2018"
 
 exclude = [
