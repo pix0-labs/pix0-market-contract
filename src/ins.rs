@@ -200,7 +200,7 @@ pub fn update_sell_offer(deps: DepsMut,
   
 }
 
-fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String ) -> Result<(), ContractError>{
+fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String ) -> Result<SellOffer, ContractError>{
 
     let owner = info.clone().sender;
     
@@ -213,9 +213,15 @@ fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : Stri
 
         Ok (c) => {
             if c.is_some() {
-                if c.unwrap().1.status == SELL_STATUS_CLOSED {
+
+                let so = c.unwrap().1;
+                if so.status == SELL_STATUS_CLOSED {
                     return Err(ContractError::SellOfferIsAlreadyClosed { 
                         message: format!("SellOffer for {} is already closed!",token_id).to_string() } );
+                }
+                else {
+
+                    Ok(so)
                 }
             }
             else {
@@ -228,7 +234,7 @@ fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : Stri
             message: format!("SellOffer for {} not found!",token_id).to_string() } ), 
     }
 
-    Ok(())
+    
 }
 
 
@@ -239,13 +245,13 @@ pub fn cancel_sell_offer (
     
     let owner = info.clone().sender;
     
-    check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone())?;
+    let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone())?;
 
     let _key = (owner.clone(), token_id );
 
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
-    Ok(Response::new()
+    Ok(refund_all_buy_offers(deps.as_ref(), so.offer_id.unwrap())
     .add_attribute("action", "remove-sell-offer"))  
 
 }
@@ -489,6 +495,15 @@ fn accept_bo_and_refund_others(deps : Deps, so_owner : Addr, buy_offer : BuyOffe
     .add_attributes(mesgs.1);
 
     res 
+}
+
+fn refund_all_buy_offers(deps : Deps,  sell_offer_id : String) -> Response{
+
+    let mesgs = refund_buy_offers(deps, sell_offer_id, None);
+
+    Response::new()
+    .add_messages(mesgs.0)
+    .add_attributes(mesgs.1)
 }
 
 fn refund_buy_offers(deps : Deps,  sell_offer_id : String, except : Option<BuyOffer>) -> (Vec<BankMsg>, Vec<Attribute>) {
