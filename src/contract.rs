@@ -8,7 +8,7 @@ use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer, 
 update_buy_offer, cancel_buy_offer, update_sell_offer, cancel_sell_offer, 
-transfer_to_escrow, accept_buy_offer};
+transfer_to_escrow, accept_buy_offer, direct_buy};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow,
 get_buy_offers_by, get_buy_offers_of};
 use pix0_contract_common::msg::InstantiateMsg;
@@ -65,6 +65,9 @@ pub fn execute(
 
         ExecuteMsg::AcceptBuyOffer { buy_offer_by, sell_offer_id } => 
         accept_buy_offer(deps, _env,_info, buy_offer_by, sell_offer_id),
+
+        ExecuteMsg::DirectBuy {sell_offer_id} =>
+        direct_buy(deps, _env, _info, sell_offer_id),
 
         ExecuteMsg::TestTransferToEscrow { coin } => 
         transfer_to_escrow(_env,coin),

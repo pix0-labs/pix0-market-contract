@@ -1,5 +1,6 @@
 use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute};
-use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED};
+use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED,
+DEAL_CLOSED_AT_DIRECT_BUY};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
 use crate::checks::*;
@@ -388,7 +389,8 @@ pub fn accept_buy_offer(deps: DepsMut,
 
     so.status = SELL_STATUS_CLOSED;
     so.deal_close_type = Some(DEAL_CLOSED_OFFER_ACCEPTED);
-    
+    so.date_updated = Some(_env.block.time);
+
     let _key = (so.owner.clone(), so.token_id.clone());
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
@@ -397,3 +399,23 @@ pub fn accept_buy_offer(deps: DepsMut,
 } 
 
 
+pub fn direct_buy(deps: DepsMut, 
+    _env : Env, info: MessageInfo, 
+    sell_offer_id : String )  -> Result<Response, ContractError> {
+
+    let mut so = sell_offer_exists_by (&deps.as_ref(),sell_offer_id.clone(), false)?.unwrap();
+  
+    let price = so.price.clone();
+
+    check_is_fund_sufficient(info.clone(), price.clone())?;
+
+    so.status = SELL_STATUS_CLOSED;
+    so.deal_close_type = Some(DEAL_CLOSED_AT_DIRECT_BUY);
+    so.date_updated = Some(_env.block.time);
+
+    let _key = (so.owner.clone(), so.token_id.clone());
+    sell_offers_store().save(deps.storage, _key.clone(), &so)?;
+
+    Ok(refund_all_buy_offers(deps.as_ref(), sell_offer_id))
+} 
+ 

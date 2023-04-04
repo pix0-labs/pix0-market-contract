@@ -67,6 +67,13 @@ pub enum ExecuteMsg {
 
     },
 
+    DirectBuy {
+
+        sell_offer_id : String,
+
+    },
+
+
     TestTransferToEscrow {
         coin : Coin,
     },
