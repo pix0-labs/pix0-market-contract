@@ -228,7 +228,7 @@ mod tests {
             }
         }
 
-        let tid_to_cancel = String::from("Tk_002");
+        let tid_to_cancel = String::from("Tk_003");
 
         let res = cancel_sell_offer(deps.as_mut(),  info.clone(), tid_to_cancel.clone());
         println!("Cancel.sell.offer:{}.res:\n{:?}", tid_to_cancel, res);
