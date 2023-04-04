@@ -2,7 +2,7 @@ use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coi
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
-use crate::query::{internal_get_sell_offer, internal_get_buy_offer,internal_get_sell_offer_by_id};
+use crate::query::{internal_get_sell_offer, internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -446,11 +446,44 @@ fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -
 
     send_tokens(recipient, vec![coin],action)
 }
-/*
-fn refund_other_buy_offers(response : Response, deps : Deps, except : BuyOffer, sell_offer_id : String) {
 
+fn accept_bo_and_refund_others(deps : Deps, so_owner : Addr, buy_offer : BuyOffer, sell_offer_id : String) -> Response {
+
+    let res = internal_transfer_from_escrow(so_owner, buy_offer.price.clone(),
+        "accept-buy-offer");
     
-} */
+    let bmesgs = refund_other_buy_offers(deps, buy_offer, sell_offer_id);
+
+    res.clone().add_messages( bmesgs);
+
+    res 
+}
+
+fn refund_other_buy_offers(deps : Deps, except : BuyOffer, sell_offer_id : String) -> Vec<BankMsg> {
+
+    let mut mesgs : Vec<BankMsg> = vec![];
+
+    let buy_offers_res = 
+    get_buy_offers_by(deps,  sell_offer_id, None, None, None);
+
+    if buy_offers_res.is_ok() {
+
+        let buy_offers : Vec<BuyOffer> = buy_offers_res.ok().unwrap().offers;
+        for b in buy_offers.iter() {
+            
+            if b.owner != except.owner {
+
+                mesgs.push(BankMsg::Send {
+                    to_address: b.owner.clone().into(),
+                    amount : vec![b.price.clone()],
+                });
+            }
+        }
+    }
+
+    mesgs
+   
+} 
 
 
 fn get_buy_offer_checked (deps: Deps, owner : Addr, sell_offer_id : String) -> Result<BuyOffer, ContractError>{
@@ -472,7 +505,7 @@ pub fn accept_buy_offer(deps: DepsMut,
     
     let owner = info.sender;
 
-    let mut bo =get_buy_offer_checked(deps.as_ref(), buy_offer_by.clone(), 
+    let mut bo = get_buy_offer_checked(deps.as_ref(), buy_offer_by.clone(), 
     sell_offer_id.clone())?;
 
     bo.accepted = true ;
@@ -482,12 +515,11 @@ pub fn accept_buy_offer(deps: DepsMut,
     
     assert_eq!(owner, so.owner);
 
-    let _key = (sell_offer_id, buy_offer_by);
+    let _key = (sell_offer_id.clone(), buy_offer_by);
 
     BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &bo)?;
    
-    Ok(internal_transfer_from_escrow(so.owner, bo.price,
-       "accept-buy-offer"))
+    Ok(accept_bo_and_refund_others(deps.as_ref(), so.owner, bo, sell_offer_id))
 } 
 
 
