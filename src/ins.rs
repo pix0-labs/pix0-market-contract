@@ -243,11 +243,9 @@ pub fn cancel_sell_offer (
     info: MessageInfo,
     token_id : String) -> Result<Response, ContractError> {
     
-    let owner = info.clone().sender;
-    
     let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone())?;
 
-    let _key = (owner.clone(), token_id );
+    let _key = (so.owner, token_id );
 
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
