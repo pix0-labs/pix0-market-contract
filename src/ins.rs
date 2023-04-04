@@ -245,15 +245,14 @@ pub fn cancel_sell_offer (
     
     let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone())?;
 
-    let _key = (so.owner, token_id );
-
-    sell_offers_store().remove(deps.branch().storage, _key.clone())?;
-
     // refund all buy offers first before cancelling them!
     let resp = refund_all_buy_offers(deps.as_ref(), so.offer_id.clone().unwrap())
     .add_attribute("action", "cancel-sell-offer");
 
     cancel_all_buy_offers(deps.branch(), so.offer_id.unwrap(), None);
+
+    let _key = (so.owner, token_id );
+    sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
     Ok(resp)  
 
