@@ -214,11 +214,12 @@ mod tests {
         let soid2 = String::from("Offer_003");
         loop_create_buy_offers(deps.as_mut(),info.clone(), soid2.clone());
 
-        let res = get_buy_offers_of(deps.as_ref(), Addr::unchecked("Alice"), None, None, None);
+        let res = get_buy_offers_of(deps.as_ref(), 
+        Addr::unchecked("Bob"), None, None, None);
 
         if res.is_ok() {
             
-            println!("\nBuy offers by Alice::");
+            println!("\nBuy offers by Bob::");
 
             for (i,b) in res.ok().unwrap().offers.iter().enumerate() {
 
