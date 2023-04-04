@@ -416,6 +416,11 @@ pub fn direct_buy(deps: DepsMut,
     let _key = (so.owner.clone(), so.token_id.clone());
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
-    Ok(refund_all_buy_offers(deps.as_ref(), sell_offer_id))
+    Ok(refund_all_buy_offers(deps.as_ref(), sell_offer_id).add_message(
+        BankMsg::Send {
+            to_address: so.owner.to_string(),
+            amount : vec![price],
+        }
+    ))
 } 
  
