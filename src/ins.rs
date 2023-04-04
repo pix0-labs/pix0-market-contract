@@ -252,7 +252,7 @@ pub fn cancel_sell_offer (
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
     Ok(refund_all_buy_offers(deps.as_ref(), so.offer_id.unwrap())
-    .add_attribute("action", "remove-sell-offer"))  
+    .add_attribute("action", "cancel-sell-offer"))  
 
 }
 
