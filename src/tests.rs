@@ -211,6 +211,9 @@ mod tests {
         let soid = String::from("Offer_002");
         loop_create_buy_offers(deps.as_mut(),info.clone(), soid.clone());
 
+        let soid2 = String::from("Offer_003");
+        loop_create_buy_offers(deps.as_mut(),info.clone(), soid2);
+
         let res = get_buy_offers_of(deps.as_ref(), Addr::unchecked("Alice"), None, None, None);
 
         if res.is_ok() {
