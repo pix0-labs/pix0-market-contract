@@ -2,7 +2,7 @@ use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coi
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
-use crate::query::{internal_get_sell_offer, internal_get_buy_offer};
+use crate::query::{internal_get_sell_offer, internal_get_buy_offer,internal_get_sell_offer_by_id};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -336,10 +336,6 @@ fn refund_or_top_up (env : Env, amount : Uint128, denom : String,
 }
 
 
-fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -> Response {
-
-    send_tokens(recipient, vec![coin],action)
-}
 
 
 pub fn create_buy_offer(deps: DepsMut, 
@@ -444,3 +440,54 @@ pub fn cancel_buy_offer(deps: DepsMut,
     Ok(res)
    
 } 
+
+
+fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -> Response {
+
+    send_tokens(recipient, vec![coin],action)
+}
+/*
+fn refund_other_buy_offers(response : Response, deps : Deps, except : BuyOffer, sell_offer_id : String) {
+
+    
+} */
+
+
+fn get_buy_offer_checked (deps: Deps, owner : Addr, sell_offer_id : String) -> Result<BuyOffer, ContractError>{
+
+    let buy_offer = internal_get_buy_offer(deps, owner, sell_offer_id)?;
+
+    if buy_offer.accepted {
+        return Err(ContractError::BuyOfferAlreadyAccepted { message:
+            format!("Buy offer {:?} already accepted!",buy_offer.owner) } );
+    }
+
+    Ok(buy_offer)
+}
+
+pub fn accept_buy_offer(deps: DepsMut, 
+    _env : Env, info: MessageInfo,
+    buy_offer_by : Addr, 
+    sell_offer_id : String )  -> Result<Response, ContractError> {
+    
+    let owner = info.sender;
+
+    let mut bo =get_buy_offer_checked(deps.as_ref(), buy_offer_by.clone(), 
+    sell_offer_id.clone())?;
+
+    bo.accepted = true ;
+    bo.date_updated = Some(_env.block.time);
+
+    let so = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
+    
+    assert_eq!(owner, so.owner);
+
+    let _key = (sell_offer_id, buy_offer_by);
+
+    BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &bo)?;
+   
+    Ok(internal_transfer_from_escrow(so.owner, bo.price,
+       "accept-buy-offer"))
+} 
+
+
