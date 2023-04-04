@@ -28,6 +28,30 @@ pub fn update_contract_info (deps: DepsMut,
 }
 
 
+
+pub fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -> bool {
+
+   
+    let loaded_sell_offer = sell_offers_store()
+    .idx.offers_by_id.item(deps.storage, offer_id);
+    
+    let mut exists = false; 
+
+    match loaded_sell_offer {
+
+        Ok (c) => {
+            if c.is_some() {
+                exists = true
+            }
+        },
+
+        Err(_)=> exists = false, 
+    }
+
+    return exists;
+}
+
+
 pub fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String ) -> bool {
 
     let owner = info.clone().sender;
@@ -71,6 +95,31 @@ fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, 
 
             return Err(ContractError::SellOfferNotFound { 
                 message: format!("SellOffer for {} not found!",token_id).to_string() } );
+      
+        }
+        Ok(())
+    }
+   
+}
+
+
+fn sell_offer_exists_by (deps : &Deps, offer_id : String, error_on_exists : bool ) -> Result<(), ContractError> {
+
+    if error_on_exists {
+        if sell_offer_exists_by_offer_id(&deps, offer_id.clone()) {
+
+            return Err(ContractError::SellOfferAlreadyExists { 
+                message: format!("SellOffer {} already exists!",offer_id).to_string() } );
+      
+        }
+        Ok(())
+    }
+    else {
+
+        if !sell_offer_exists_by_offer_id(&deps, offer_id.clone()) {
+
+            return Err(ContractError::SellOfferNotFound { 
+                message: format!("SellOffer {} not found!",offer_id).to_string() } );
       
         }
         Ok(())
@@ -180,12 +229,16 @@ fn check_buy_offer_exists (deps : Deps, owner : &Addr, sell_offer_id : String, e
     
     let bo_result = stored_bo.may_load(deps.storage);
     
+    
     if exists_on_error {
 
         if bo_result.is_ok() {
 
-            return Err(ContractError::BuyOfferAlreadyExists { 
-                message: format!("Buy Offer for {:?} already exists!", owner) } );
+            if bo_result.ok().unwrap().is_some() {
+                return Err(ContractError::BuyOfferAlreadyExists { 
+                    message: format!("Buy Offer for {:?} already exists!", owner) } );
+          
+            }
       
         }
         Ok(())
@@ -193,6 +246,16 @@ fn check_buy_offer_exists (deps : Deps, owner : &Addr, sell_offer_id : String, e
     }
     else {
 
+        if bo_result.is_ok() {
+
+            if bo_result.ok().unwrap().is_none() {
+                return Err(ContractError::BuyOfferNotFound { 
+                    message: format!("Buy Offer for {:?} NOT found!", owner) } );
+          
+            }
+      
+        }
+        else 
         if bo_result.is_err() {
             return Err(ContractError::BuyOfferNotFound { 
                 message: format!("Buy Offer for {:?} NOT found!", owner) } );
@@ -279,14 +342,23 @@ fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -
 }
 
 
-pub fn create_buy_offer(mut deps: DepsMut, 
+pub fn create_buy_offer(deps: DepsMut, 
     _env : Env, info: MessageInfo, 
     buy_offer : BuyOffer, 
     sell_offer_id : String )  -> Result<Response, ContractError> {
 
     let owner = info.clone().sender;
 
-    check_sell_offer_exists (&deps.as_ref(), &info, sell_offer_id.clone(), false)?;
+    internal_create_buy_offer(deps, _env, info, owner, buy_offer, sell_offer_id)
+}
+
+pub (crate) fn internal_create_buy_offer(mut deps: DepsMut, 
+    _env : Env, info: MessageInfo, 
+    owner : Addr, 
+    buy_offer : BuyOffer, 
+    sell_offer_id : String )  -> Result<Response, ContractError> {
+
+    sell_offer_exists_by (&deps.as_ref(),sell_offer_id.clone(), false)?;
 
     let mut buy_offer  = buy_offer;
     buy_offer.owner = owner.clone();

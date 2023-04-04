@@ -144,6 +144,17 @@ mod tests {
             date_updated : None, 
         };
 
+        let _res = internal_create_buy_offer(deps, mock_env(), info, Addr::unchecked(owner),b, sell_offer_id.clone());
+
+        if _res.is_err() {
+
+            println!("Error.creating BuyOffer for :{}, error:is::{:?}", sell_offer_id, _res);
+        }
+        else {
+
+            println!("Buy offer.created:::{:?}\n\n", _res);
+        }
+        /* 
         let create_bo = ExecuteMsg::CreateBuyOffer {
             buy_offer : b.clone(),
             sell_offer_id : sell_offer_id.clone(),
@@ -154,7 +165,7 @@ mod tests {
         if _res.is_err() {
 
             println!("Error.creating BuyOffer for :{}, error:is::{:?}", sell_offer_id, _res);
-        }
+        }*/
 
     }
 
@@ -188,6 +199,14 @@ mod tests {
         inst(deps.as_mut(), info.clone(), owner);
         
         loop_create_so(deps.as_mut(), info.clone(),3, owner, true);
+
+        let res = get_sell_offers_of(deps.as_ref(), Addr::unchecked(owner), None, None, None);
+
+        for (index, o) in res.ok().unwrap().offers.iter().enumerate() {
+
+            println!("{}: Offer.id::{:?}::tok.id:{:?}",(index+1), o.offer_id, o.token_id);
+        }
+
 
         loop_create_buy_offers(deps.as_mut(),info.clone(), String::from("Offer_002"));
 
