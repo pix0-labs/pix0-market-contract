@@ -1,5 +1,5 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
-use crate::indexes::{sell_offers_store, buy_offers_store};
+use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::state::{SellOffer, BuyOffer};
 use crate::error::ContractError;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse};
@@ -166,9 +166,9 @@ pub (crate) fn internal_get_sell_offer_by_id(deps: Deps, offer_id : String   ) -
 #[allow(dead_code)]
 pub (crate) fn internal_get_buy_offer(deps: Deps, owner : Addr, sell_offer_id : String   ) -> Result<BuyOffer, ContractError>{
 
-    let _key = (owner.clone(),sell_offer_id.clone());
+    let _key = (sell_offer_id.clone(), owner.clone());
 
-    let stored_bo = buy_offers_store().key(_key.clone());
+    let stored_bo = BUY_OFFERS_STORE.key(_key.clone());
     
     let res = stored_bo.may_load(deps.storage);
     
@@ -222,8 +222,7 @@ pub fn get_buy_offers_by(deps : Deps,
    
     let offers : StdResult<Vec<BuyOffer>> = 
 
-    buy_offers_store()
-    .idx.sell_offers
+    BUY_OFFERS_STORE
     .prefix(sell_offer_id)
     .range(deps.storage, None, None, Order::Ascending)
     .map(|offer| {
@@ -241,8 +240,6 @@ pub fn get_buy_offers_by(deps : Deps,
         )
     }).collect();
 
-    println!("\nxxx.oo..x:{:?}", offers);
-
     if offers.is_err() {
 
         return Ok(BuyOffersWithParamsResponse::empty_response())
@@ -251,7 +248,7 @@ pub fn get_buy_offers_by(deps : Deps,
 
     let offers = offers.unwrap();
 
-    let res : (Vec<BuyOffer>,usize) = filter_buy_offer_result(offers, accepted, start, limit);
+    let res : (Vec<BuyOffer>,usize) = filter_buy_offer_result(offers, accepted, None,start, limit);
 
     Ok(BuyOffersWithParamsResponse {
         offers: res.0,
@@ -272,9 +269,7 @@ pub fn get_buy_offers_of(deps : Deps,
    
     let offers : StdResult<Vec<BuyOffer>> = 
 
-    buy_offers_store()
-    .idx.offers
-    .prefix(owner)
+    BUY_OFFERS_STORE
     .range(deps.storage, None, None, Order::Ascending)
     .map(|offer| {
         
@@ -300,7 +295,7 @@ pub fn get_buy_offers_of(deps : Deps,
 
     let offers = offers.unwrap();
 
-    let res : (Vec<BuyOffer>,usize) = filter_buy_offer_result(offers, accepted, start, limit);
+    let res : (Vec<BuyOffer>,usize) = filter_buy_offer_result(offers, accepted, Some(owner), start, limit);
 
     Ok(BuyOffersWithParamsResponse {
         offers: res.0,
@@ -315,6 +310,7 @@ pub fn get_buy_offers_of(deps : Deps,
 fn filter_buy_offer_result(
     offers : Vec<BuyOffer>, 
     accepted : Option<bool>,
+    owner : Option<Addr>, 
     start : Option<u32>,
     limit: Option<u32>) -> (Vec<BuyOffer>,usize){
 
@@ -322,7 +318,7 @@ fn filter_buy_offer_result(
 
     let skip = start.unwrap_or(0) as usize ;
     
-    let res = filter_buy_offer_result_all(offers, accepted);
+    let res = filter_buy_offer_result_all(offers, accepted, owner);
 
     (res.clone()
     .into_iter()
@@ -332,9 +328,25 @@ fn filter_buy_offer_result(
 }
 
 fn filter_buy_offer_result_all(offers : Vec<BuyOffer>, 
-    accepted : Option<bool>) -> Vec<BuyOffer>{
+    accepted : Option<bool>, owner : Option<Addr>) -> Vec<BuyOffer>{
    
-    if  accepted.is_some() {
+    if  accepted.is_some() && owner.is_some() {
+
+        offers.into_iter().filter(|b| 
+        b.accepted == accepted.unwrap()
+        && b.owner == owner.clone().unwrap() 
+        )
+        .collect::<Vec<BuyOffer>>()
+    }
+    else
+    if  owner.is_some() && accepted.is_none() {
+
+        offers.into_iter().filter(|b| 
+        b.owner == owner.clone().unwrap())
+        .collect::<Vec<BuyOffer>>()
+    }
+    else
+    if  accepted.is_some() && owner.is_none() {
 
         offers.into_iter().filter(|b| 
         b.accepted == accepted.unwrap())

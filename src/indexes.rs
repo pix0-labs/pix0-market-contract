@@ -1,9 +1,10 @@
 use crate::state::{ SellOffer, PurchaseHistory, BuyOffer};
 use cosmwasm_std::Addr;
-use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map, MultiIndex};
+use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map};
 
 pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::new("PIX0_PHIST_STORE");
 
+pub const BUY_OFFERS_STORE : Map<(String, Addr), BuyOffer> = Map::new("PIX0_BUY_OFFERS_STORE");
 
 pub struct SellOfferIndexes<'a> {
 
@@ -38,7 +39,9 @@ pub fn sell_offers_store<'a>() -> IndexedMap<'a,(Addr,String), SellOffer, SellOf
 
 
 
-
+/* MultiIndex doesn't seem to work properly, the last error known
+was ParseErr { target_type: "pix0_market_contract::state::BuyOffer", msg: "missing field `owner`" }*/
+/* 
 pub struct BuyOfferIndexes<'a> {
 
     pub offers : UniqueIndex<'a, (Addr,String), BuyOffer>,
@@ -73,4 +76,4 @@ pub fn buy_offers_store<'a>() -> IndexedMap<'a,(Addr,String), BuyOffer, BuyOffer
 
     IndexedMap::new("BUY_OFFERS_STORE", indexes)
 }
-
+*/

@@ -212,7 +212,7 @@ mod tests {
         loop_create_buy_offers(deps.as_mut(),info.clone(), soid.clone());
 
         let soid2 = String::from("Offer_003");
-        loop_create_buy_offers(deps.as_mut(),info.clone(), soid2);
+        loop_create_buy_offers(deps.as_mut(),info.clone(), soid2.clone());
 
         let res = get_buy_offers_of(deps.as_ref(), Addr::unchecked("Alice"), None, None, None);
 
@@ -220,21 +220,22 @@ mod tests {
             
             println!("\nBuy offers by Alice::");
 
-            for b in res.ok().unwrap().offers {
+            for (i,b) in res.ok().unwrap().offers.iter().enumerate() {
 
-                println!("b::{:?}", b);
+                println!("{}.b::{:?}\n",(i+1), b);
             }
         }
         
-        let res = get_buy_offers_by(deps.as_ref(), soid.clone(), None, None, None);
+        let res = get_buy_offers_by(deps.as_ref(), soid2.clone(), None, None, None);
 
         if res.is_ok() {
 
-            println!("\nBuy offers by sell offer id:{}::", soid);
+            println!("\nBuy offers by sell offer id:{}::", soid2);
 
-            for b in res.ok().unwrap().offers {
+            for (i,b) in res.ok().unwrap().offers.iter().enumerate() {
 
-                println!("b::{:?}", b);
+                println!("{}.b::{:?}\n",(i+1) , b);
+                assert_eq!(b.sell_offer_id, soid2 );
             }
         }
         
