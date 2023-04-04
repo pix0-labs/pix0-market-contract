@@ -251,10 +251,39 @@ pub fn cancel_sell_offer (
 
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
-    Ok(refund_all_buy_offers(deps.as_ref(), so.offer_id.unwrap())
-    .add_attribute("action", "cancel-sell-offer"))  
+    let resp = refund_all_buy_offers(deps.as_ref(), so.offer_id.clone().unwrap())
+    .add_attribute("action", "cancel-sell-offer");
+
+    cancel_all_buy_offers(deps.branch(), so.offer_id.unwrap(), None);
+
+    Ok(resp)  
 
 }
+
+fn cancel_all_buy_offers(deps : DepsMut, sell_offer_id : String, except : Option<BuyOffer>)  {
+  
+    let buy_offers_res = 
+    get_buy_offers_by(deps.as_ref(),  sell_offer_id.clone(), None, None, None);
+
+    if buy_offers_res.is_ok() {
+
+        let mut buy_offers : Vec<BuyOffer> = buy_offers_res.ok().unwrap().offers;
+
+        if except.is_some() {
+            buy_offers.retain(|b| b.owner != except.clone().unwrap().owner);
+        }
+
+        for b in buy_offers.iter() {
+
+            let _key = (sell_offer_id.clone(),b.owner.clone());
+
+            BUY_OFFERS_STORE.remove(deps.storage, _key.clone());
+
+        }
+    }
+   
+} 
+
 
 
 fn check_buy_offer_exists (deps : Deps, owner : &Addr, sell_offer_id : String, exists_on_error : bool) -> Result<(), ContractError> {

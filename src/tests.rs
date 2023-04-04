@@ -228,8 +228,10 @@ mod tests {
             }
         }
 
-        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_002"));
-        println!("Cancel.sell.offer.res:{:?}", res);
+        let tid_to_cancel = String::from("Tk_002");
+
+        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), tid_to_cancel.clone());
+        println!("Cancel.sell.offer:{}.res:\n{:?}", tid_to_cancel, res);
         
         let res = get_buy_offers_by(deps.as_ref(), soid.clone(), None, None, None);
 
