@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg};
+use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
@@ -452,36 +452,44 @@ fn accept_bo_and_refund_others(deps : Deps, so_owner : Addr, buy_offer : BuyOffe
     let res = internal_transfer_from_escrow(so_owner, buy_offer.price.clone(),
         "accept-buy-offer");
     
-    let bmesgs = refund_other_buy_offers(deps, buy_offer, sell_offer_id);
+    let mesgs = refund_buy_offers(deps,  sell_offer_id, Some(buy_offer));
 
-    res.clone().add_messages( bmesgs);
+    res.clone()
+    .add_messages( mesgs.0)
+    .add_attributes(mesgs.1);
 
     res 
 }
 
-fn refund_other_buy_offers(deps : Deps, except : BuyOffer, sell_offer_id : String) -> Vec<BankMsg> {
+fn refund_buy_offers(deps : Deps,  sell_offer_id : String, except : Option<BuyOffer>) -> (Vec<BankMsg>, Vec<Attribute>) {
 
     let mut mesgs : Vec<BankMsg> = vec![];
+    let mut attrbs : Vec<Attribute> = vec![];
 
     let buy_offers_res = 
     get_buy_offers_by(deps,  sell_offer_id, None, None, None);
 
     if buy_offers_res.is_ok() {
 
-        let buy_offers : Vec<BuyOffer> = buy_offers_res.ok().unwrap().offers;
-        for b in buy_offers.iter() {
-            
-            if b.owner != except.owner {
+        let mut buy_offers : Vec<BuyOffer> = buy_offers_res.ok().unwrap().offers;
 
-                mesgs.push(BankMsg::Send {
-                    to_address: b.owner.clone().into(),
-                    amount : vec![b.price.clone()],
-                });
-            }
+        if except.is_some() {
+            buy_offers.retain(|b| b.owner != except.clone().unwrap().owner);
+        }
+
+        for b in buy_offers.iter() {
+                      
+            mesgs.push(BankMsg::Send {
+                to_address: b.owner.clone().into(),
+                amount : vec![b.price.clone()],
+            });
+        
+            attrbs.push(Attribute { key: String::from("to"), value: b.owner.clone().into() });
+
         }
     }
 
-    mesgs
+    (mesgs, attrbs)
    
 } 
 
