@@ -1,5 +1,5 @@
 use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute};
-use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer};
+use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
 use crate::query::{internal_get_sell_offer, internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
@@ -200,16 +200,46 @@ pub fn update_sell_offer(deps: DepsMut,
   
 }
 
+fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String ) -> Result<(), ContractError>{
+
+    let owner = info.clone().sender;
+    
+    let _key = (owner, token_id.clone());
+
+    let loaded_sell_offer = sell_offers_store()
+    .idx.offers.item(deps.storage, _key);
+    
+    match loaded_sell_offer {
+
+        Ok (c) => {
+            if c.is_some() {
+                if c.unwrap().1.status == SELL_STATUS_CLOSED {
+                    return Err(ContractError::SellOfferIsAlreadyClosed { 
+                        message: format!("SellOffer for {} is already closed!",token_id).to_string() } );
+                }
+            }
+            else {
+                return Err(ContractError::SellOfferNotFound { 
+                    message: format!("SellOffer for {} not found!",token_id).to_string() } );
+            }
+        },
+
+        Err(_)=>   return Err(ContractError::SellOfferNotFound { 
+            message: format!("SellOffer for {} not found!",token_id).to_string() } ), 
+    }
+
+    Ok(())
+}
 
 
-pub fn remove_sell_offer (
+pub fn cancel_sell_offer (
     mut deps: DepsMut ,  
     info: MessageInfo,
     token_id : String) -> Result<Response, ContractError> {
     
     let owner = info.clone().sender;
     
-    check_sell_offer_exists (&deps.as_ref(), &info, token_id.clone(), false)?;
+    check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone())?;
 
     let _key = (owner.clone(), token_id );
 
@@ -519,13 +549,20 @@ pub fn accept_buy_offer(deps: DepsMut,
     bo.accepted = true ;
     bo.date_updated = Some(_env.block.time);
 
-    let so = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
+    let mut so = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
     
     assert_eq!(owner, so.owner);
 
     let _key = (sell_offer_id.clone(), buy_offer_by);
 
     BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &bo)?;
+
+    so.status = SELL_STATUS_CLOSED;
+    so.deal_close_type = Some(DEAL_CLOSED_OFFER_ACCEPTED);
+    
+    let _key = (so.owner.clone(), so.token_id.clone());
+    sell_offers_store().save(deps.storage, _key.clone(), &so)?;
+
    
     Ok(accept_bo_and_refund_others(deps.as_ref(), so.owner, bo, sell_offer_id))
 } 

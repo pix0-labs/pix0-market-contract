@@ -31,7 +31,7 @@ pub enum ExecuteMsg {
     },
 
 
-    RemoveSellOffer {
+    CancelSellOffer {
 
         token_id : String,
     },
@@ -51,6 +51,15 @@ pub enum ExecuteMsg {
         sell_offer_id : String,
 
     },
+
+    AcceptBuyOffer {
+
+        buy_offer_by : Addr,
+
+        sell_offer_id : String,
+
+    },
+
 
     CancelBuyOffer {
 

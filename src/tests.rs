@@ -45,7 +45,8 @@ mod tests {
 
     }
 
-    fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, running_offer_id : bool ) {
+    fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, running_offer_id : bool,
+    status : u8 ) {
 
         for x in 0..(max+1) {
      
@@ -68,7 +69,7 @@ mod tests {
                 collection_info : None,
                 offer_id : oid, 
                 price : price, 
-                status : 0,
+                status : status ,
                 allowed_direct_buy : true, 
                 deal_close_type : None,
                 date_created : None,
@@ -109,9 +110,9 @@ mod tests {
 
         inst(deps.as_mut(), info.clone(), owner);
        
-        loop_create_so(deps.as_mut(), info.clone(),10, owner, false);
+        loop_create_so(deps.as_mut(), info.clone(),10, owner, false, 2 );
 
-        let res = remove_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_005"));
+        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_005"));
 
         println!("Removed.res:{:?}\n",res);
 
@@ -198,7 +199,7 @@ mod tests {
 
         inst(deps.as_mut(), info.clone(), owner);
         
-        loop_create_so(deps.as_mut(), info.clone(),3, owner, true);
+        loop_create_so(deps.as_mut(), info.clone(),3, owner, true, 0 );
 
         let res = get_sell_offers_of(deps.as_ref(), Addr::unchecked(owner), None, None, None);
 

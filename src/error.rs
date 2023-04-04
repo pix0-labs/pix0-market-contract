@@ -44,6 +44,9 @@ pub enum ContractError {
     #[error("BuyOfferAlreadyAccepted")]
     BuyOfferAlreadyAccepted { message : String },
 
+    #[error("SellOfferIsAlreadyClosed")]
+    SellOfferIsAlreadyClosed { message : String },
+
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
 }
