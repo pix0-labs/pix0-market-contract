@@ -208,7 +208,33 @@ mod tests {
         }
 
 
-        loop_create_buy_offers(deps.as_mut(),info.clone(), String::from("Offer_002"));
+        let soid = String::from("Offer_002");
+        loop_create_buy_offers(deps.as_mut(),info.clone(), soid.clone());
+
+        let res = get_buy_offers_of(deps.as_ref(), Addr::unchecked("Alice"), None, None, None);
+
+        if res.is_ok() {
+            
+            println!("\nBuy offers by Alice::");
+
+            for b in res.ok().unwrap().offers {
+
+                println!("b::{:?}", b);
+            }
+        }
+        
+        let res = get_buy_offers_by(deps.as_ref(), soid.clone(), None, None, None);
+
+        if res.is_ok() {
+
+            println!("\nBuy offers by sell offer id:{}::", soid);
+
+            for b in res.ok().unwrap().offers {
+
+                println!("b::{:?}", b);
+            }
+        }
+        
 
     }
 
