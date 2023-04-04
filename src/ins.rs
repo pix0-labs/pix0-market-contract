@@ -2,6 +2,7 @@ use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coi
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
+use crate::checks::*;
 use crate::query::{internal_get_sell_offer, internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
@@ -25,106 +26,6 @@ pub fn update_contract_info (deps: DepsMut,
 
         Err(e)=> Err(ContractError::from(e)),
     }
-}
-
-
-
-pub fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -> bool {
-
-   
-    let loaded_sell_offer = sell_offers_store()
-    .idx.offers_by_id.item(deps.storage, offer_id);
-    
-    let mut exists = false; 
-
-    match loaded_sell_offer {
-
-        Ok (c) => {
-            if c.is_some() {
-                exists = true
-            }
-        },
-
-        Err(_)=> exists = false, 
-    }
-
-    return exists;
-}
-
-
-pub fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String ) -> bool {
-
-    let owner = info.clone().sender;
-    
-    let _key = (owner, token_id);
-
-    let loaded_sell_offer = sell_offers_store()
-    .idx.offers.item(deps.storage, _key);
-    
-    let mut exists = false; 
-
-    match loaded_sell_offer {
-
-        Ok (c) => {
-            if c.is_some() {
-                exists = true
-            }
-        },
-
-        Err(_)=> exists = false, 
-    }
-
-    return exists;
-}
-
-
-fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, error_on_exists : bool ) -> Result<(), ContractError> {
-
-    if error_on_exists {
-        if sell_offer_exists(&deps, info.clone(), token_id.clone()) {
-
-            return Err(ContractError::SellOfferAlreadyExists { 
-                message: format!("SellOffer for {} already exists!",token_id).to_string() } );
-      
-        }
-        Ok(())
-    }
-    else {
-
-        if !sell_offer_exists(&deps, info.clone(), token_id.clone()) {
-
-            return Err(ContractError::SellOfferNotFound { 
-                message: format!("SellOffer for {} not found!",token_id).to_string() } );
-      
-        }
-        Ok(())
-    }
-   
-}
-
-
-fn sell_offer_exists_by (deps : &Deps, offer_id : String, error_on_exists : bool ) -> Result<(), ContractError> {
-
-    if error_on_exists {
-        if sell_offer_exists_by_offer_id(&deps, offer_id.clone()) {
-
-            return Err(ContractError::SellOfferAlreadyExists { 
-                message: format!("SellOffer {} already exists!",offer_id).to_string() } );
-      
-        }
-        Ok(())
-    }
-    else {
-
-        if !sell_offer_exists_by_offer_id(&deps, offer_id.clone()) {
-
-            return Err(ContractError::SellOfferNotFound { 
-                message: format!("SellOffer {} not found!",offer_id).to_string() } );
-      
-        }
-        Ok(())
-    }
-   
 }
 
 
@@ -200,42 +101,6 @@ pub fn update_sell_offer(deps: DepsMut,
   
 }
 
-fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String ) -> Result<SellOffer, ContractError>{
-
-    let owner = info.clone().sender;
-    
-    let _key = (owner, token_id.clone());
-
-    let loaded_sell_offer = sell_offers_store()
-    .idx.offers.item(deps.storage, _key);
-    
-    match loaded_sell_offer {
-
-        Ok (c) => {
-            if c.is_some() {
-
-                let so = c.unwrap().1;
-                if so.status == SELL_STATUS_CLOSED {
-                    return Err(ContractError::SellOfferIsAlreadyClosed { 
-                        message: format!("SellOffer for {} is already closed!",token_id).to_string() } );
-                }
-                else {
-
-                    Ok(so)
-                }
-            }
-            else {
-                return Err(ContractError::SellOfferNotFound { 
-                    message: format!("SellOffer for {} not found!",token_id).to_string() } );
-            }
-        },
-
-        Err(_)=>   return Err(ContractError::SellOfferNotFound { 
-            message: format!("SellOffer for {} not found!",token_id).to_string() } ), 
-    }
-
-    
-}
 
 
 pub fn cancel_sell_offer (
@@ -284,82 +149,6 @@ fn cancel_all_buy_offers(deps : DepsMut, sell_offer_id : String, except : Option
 
 
 
-fn check_buy_offer_exists (deps : Deps, owner : &Addr, sell_offer_id : String, exists_on_error : bool) -> Result<(), ContractError> {
-
-    let _key = (sell_offer_id,owner.clone());
-
-    let stored_bo = BUY_OFFERS_STORE.key(_key.clone());
-    
-    let bo_result = stored_bo.may_load(deps.storage);
-    
-    
-    if exists_on_error {
-
-        if bo_result.is_ok() {
-
-            if bo_result.ok().unwrap().is_some() {
-                return Err(ContractError::BuyOfferAlreadyExists { 
-                    message: format!("Buy Offer for {:?} already exists!", owner) } );
-          
-            }
-      
-        }
-        Ok(())
-    
-    }
-    else {
-
-        if bo_result.is_ok() {
-
-            if bo_result.ok().unwrap().is_none() {
-                return Err(ContractError::BuyOfferNotFound { 
-                    message: format!("Buy Offer for {:?} NOT found!", owner) } );
-          
-            }
-      
-        }
-        else 
-        if bo_result.is_err() {
-            return Err(ContractError::BuyOfferNotFound { 
-                message: format!("Buy Offer for {:?} NOT found!", owner) } );
-      
-        }
-        Ok(())
-    }
-   
-}
-
-
-fn check_is_fund_sufficient (info : MessageInfo, required_fund : Coin) -> Result<(), ContractError> {
-
-    let sent_funds: Vec<Coin> = info.funds.clone();
-
-    if required_fund.amount == Uint128::from(0u8) {
-        return Err(ContractError::InvalidRequiredFund { 
-            message: String::from("Required fund cannot be zero!")} 
-        );
-    }
-
-    if sent_funds.len() == 0 {
-        return Err(ContractError::InsufficientFund { 
-            message: format!("Sent fund 0{} is less than required {}{}!",
-            required_fund.denom, required_fund.amount, required_fund.denom) } );
-    }
-
-    let first_fund = sent_funds.get(0).unwrap();
-
-    if first_fund.amount < Uint128::from(required_fund.amount) ||
-    first_fund.denom != required_fund.denom {
-        return Err(ContractError::InsufficientFund { 
-            message: format!("Sent fund {}{} is less than required {}{}!",first_fund.amount,
-        first_fund.denom, required_fund.amount, required_fund.denom) } );
-    }
-    else {
-        Ok(())
-    }
-}
-
-
 // this is a helper to move the tokens, so the business logic is easy to read
 fn send_tokens(to_address: Addr, amount: Vec<Coin>, action: &str) -> Response {
     Response::new()
@@ -397,8 +186,6 @@ fn refund_or_top_up (env : Env, amount : Uint128, denom : String,
         internal_transfer_to_escrow(env, coin, action )
     }
 }
-
-
 
 
 pub fn create_buy_offer(deps: DepsMut, 

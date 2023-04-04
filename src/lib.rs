@@ -7,5 +7,6 @@ pub mod query;
 pub mod ins;
 mod utils;
 mod tests;
+mod checks;
 
 pub use crate::error::ContractError;
