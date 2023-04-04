@@ -9,7 +9,8 @@ use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer, 
 update_buy_offer, cancel_buy_offer, update_sell_offer, remove_sell_offer, 
 transfer_to_escrow};
-use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow};
+use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow,
+get_buy_offers_by, get_buy_offers_of};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
 // version info for migration info
@@ -81,6 +82,14 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetBalanceOfEscrow {
             denom 
         }  => to_binary(&get_balance_of_escrow(_deps, _env, denom)?),
+
+        QueryMsg::GetBuyOffersOf {
+            owner, accepted, start, limit  
+        }  => to_binary(&get_buy_offers_of(_deps, owner, accepted, start, limit)?),
+
+        QueryMsg::GetBuyOffersBy {
+            sell_offer_id, accepted, start, limit  
+        }  => to_binary(&get_buy_offers_by(_deps, sell_offer_id, accepted, start, limit)?),
 
     }
 }

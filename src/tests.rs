@@ -3,7 +3,7 @@ mod tests {
   
     use crate::state::*;
     use cosmwasm_std::testing::{mock_env, mock_info, mock_dependencies_with_balance};
-    use cosmwasm_std::{coins, Addr,  Coin, Uint128, };
+    use cosmwasm_std::{coins, Addr,  Coin, Uint128, DepsMut, MessageInfo };
     use crate::msg::*;
     use crate::contract::*;
     use pix0_contract_common::msg::InstantiateMsg;
@@ -14,18 +14,11 @@ mod tests {
 
 
     const DEFAULT_PRICE_DENOM : &str = "uconst";
-   
-    // cargo test test_create_sell_offers -- --show-output
-    #[test]
-    fn test_create_sell_offers(){
 
-        let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
 
-        let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
-        let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
+    fn inst (deps : DepsMut,info: MessageInfo, owner : &str) {
 
-        println!("Test.create.sell.offers!");
-
+      
         let admin =  Addr::unchecked(owner.to_string());
         let admin2 =  Addr::unchecked("archway1upspu5660q39adv768z8ffk44ta6lzd4nfw2zw".to_string());
         let admin3 =  Addr::unchecked("archway1cz5a70ja86ak40de7r6vgm2lr9mtgvue5sj5kp".to_string());
@@ -38,20 +31,31 @@ mod tests {
             fees : Some(vec![ 
                 Fee {name : "CREATE_SELL_OFFER_FEE".to_string(),
                 value : Coin { amount : Uint128::from(3500u64), denom : "uconst".to_string()}},
+                Fee {name : "CREATE_BUY_OFFER_FEE".to_string(),
+                value : Coin { amount : Uint128::from(2800u64), denom : "uconst".to_string()}},
             ]) ,
             log_last_payment : Some(true)
 
         };
 
-        let res = instantiate(deps.as_mut(), mock_env(), info.clone(), ins.clone());
+        let res = instantiate(deps, mock_env(), info.clone(), ins.clone());
        
         println!("Instantiated::{:?}\n", res);
        
 
-        for x in 0..10 {
+    }
+
+    fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, running_offer_id : bool ) {
+
+        for x in 0..(max+1) {
      
             let tid = format!("Tk_00{}", x);
-            //let oid = format!("Offer_00{}", x);
+            let mut oid :Option<String> = None ;
+
+            if running_offer_id {
+
+                oid = Some(format!("Offer_00{}", x));
+            }
 
             let price : Coin = Coin {
                 amount : Uint128::from((3500 * (x+1)) as u64 ),
@@ -62,7 +66,7 @@ mod tests {
                 token_id : tid, 
                 owner : Addr::unchecked(owner), 
                 collection_info : None,
-                offer_id : None,//Some(oid),
+                offer_id : oid, 
                 price : price, 
                 status : 0,
                 allowed_direct_buy : true, 
@@ -75,7 +79,7 @@ mod tests {
                 offer : s.clone()
             };
   
-             let _res = execute(deps.as_mut(), mock_env(), info.clone(), 
+             let _res = execute(deps.branch(), mock_env(), info.clone(), 
              create_so.clone());
   
              if _res.is_err() {
@@ -90,6 +94,22 @@ mod tests {
 
         }
 
+    }
+   
+    // cargo test test_create_sell_offers -- --show-output
+    #[test]
+    fn test_create_sell_offers(){
+
+        println!("Test.create.sell.offers!");
+
+        let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
+
+        let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
+        let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
+
+        inst(deps.as_mut(), info.clone(), owner);
+       
+        loop_create_so(deps.as_mut(), info.clone(),10, owner, false);
 
         let res = remove_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_005"));
 
@@ -110,6 +130,69 @@ mod tests {
         assert_eq!(oid, o.unwrap().offer_id.unwrap());
         
     }
+
+
+    fn create_bo(deps : DepsMut, info : MessageInfo, owner : &str, sell_offer_id : String,
+    price : Coin ){
+
+        let b = BuyOffer {
+            owner : Addr::unchecked(owner), 
+            sell_offer_id : sell_offer_id.clone(),
+            price : price, 
+            accepted : false, 
+            date_created : None,
+            date_updated : None, 
+        };
+
+        let create_bo = ExecuteMsg::CreateBuyOffer {
+            buy_offer : b.clone(),
+            sell_offer_id : sell_offer_id.clone(),
+        };
+        let _res = execute(deps, mock_env(), info.clone(), 
+        create_bo);
+
+        if _res.is_err() {
+
+            println!("Error.creating BuyOffer for :{}, error:is::{:?}", sell_offer_id, _res);
+        }
+
+    }
+
+    fn loop_create_buy_offers(mut deps : DepsMut, info : MessageInfo, sell_offer_id : String ) {
+
+        let owners = vec!["Bob", "Alice", "Janice"];
+
+        for (i,o) in owners.iter().enumerate() {
+
+            let price = Coin {
+                amount : Uint128::from(1200u64 * ((i+1) as u64)),
+                denom : DEFAULT_PRICE_DENOM.to_string(),
+            };
+            create_bo(deps.branch(), info.clone(), o, sell_offer_id.clone(), price);
+        }
+
+    }
+
+
+    // cargo test test_create_buy_offers -- --show-output
+    #[test]
+    fn test_create_buy_offers(){
+
+        println!("Test.create.buy.offers!");
+
+        let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
+
+        let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
+        let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
+
+        inst(deps.as_mut(), info.clone(), owner);
+        
+        loop_create_so(deps.as_mut(), info.clone(),3, owner, true);
+
+        loop_create_buy_offers(deps.as_mut(),info.clone(), String::from("Offer_002"));
+
+    }
+
 
 
       // cargo test test_send_to_escrow -- --show-output

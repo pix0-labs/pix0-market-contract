@@ -86,8 +86,28 @@ pub enum QueryMsg {
     GetBalanceOfEscrow {
 
         denom : String, 
-    }
+    },
 
+    GetBuyOffersOf {
+        owner : Addr, 
+
+        accepted : Option<bool>,
+
+        start : Option<u32>,
+
+        limit : Option<u32>,
+    },
+
+
+    GetBuyOffersBy {
+        sell_offer_id : String , 
+
+        accepted : Option<bool>,
+
+        start : Option<u32>,
+
+        limit : Option<u32>,
+    },
 
 }
 
