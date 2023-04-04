@@ -3,7 +3,7 @@ use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEA
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
 use crate::checks::*;
-use crate::query::{internal_get_sell_offer, internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
+use crate::query::{internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 
@@ -79,10 +79,10 @@ pub fn update_sell_offer(deps: DepsMut,
 
     let owner = info.clone().sender;
 
-    check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), false)?;
+    let so = check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), false)?;
 
-    let mut offer_to_update = internal_get_sell_offer(deps.as_ref(), owner.clone(), sell_offer.token_id.clone())?;
-    
+    let mut offer_to_update = so.unwrap();
+
     offer_to_update.price = sell_offer.price;
     offer_to_update.allowed_direct_buy = sell_offer.allowed_direct_buy;
 

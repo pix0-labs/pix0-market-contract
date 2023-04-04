@@ -113,6 +113,7 @@ pub fn get_sell_offer_by_id(deps: Deps, offer_id : String ) -> StdResult<SellOff
    
 } 
 
+#[allow(dead_code)]
 pub (crate) fn internal_get_sell_offer(deps: Deps, owner : Addr, token_id : String  ) -> Result<SellOffer, ContractError>{
 
     let _key = (owner, token_id.clone() );

@@ -25,7 +25,7 @@ pub (crate) fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -
 }
 
 
-pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String ) -> bool {
+pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String ) -> Option<SellOffer> {
 
     let owner = info.clone().sender;
     
@@ -34,43 +34,48 @@ pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : Str
     let loaded_sell_offer = sell_offers_store()
     .idx.offers.item(deps.storage, _key);
     
-    let mut exists = false; 
-
     match loaded_sell_offer {
 
         Ok (c) => {
             if c.is_some() {
-                exists = true
+                Some(c.unwrap().1)
+            }
+            else {
+                None
             }
         },
 
-        Err(_)=> exists = false, 
+        Err(_)=> None, 
     }
 
-    return exists;
 }
 
 
-pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, error_on_exists : bool ) -> Result<(), ContractError> {
+pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, error_on_exists : bool ) 
+-> Result<Option<SellOffer>, ContractError> {
 
     if error_on_exists {
-        if sell_offer_exists(&deps, info.clone(), token_id.clone()) {
+        let so = sell_offer_exists(&deps, info.clone(), token_id.clone());
+        
+        if so.is_some() {
 
             return Err(ContractError::SellOfferAlreadyExists { 
                 message: format!("SellOffer for {} already exists!",token_id).to_string() } );
       
         }
-        Ok(())
+        Ok(None)
     }
     else {
 
-        if !sell_offer_exists(&deps, info.clone(), token_id.clone()) {
+        let so = sell_offer_exists(&deps, info.clone(), token_id.clone());
+
+        if so.is_none() {
 
             return Err(ContractError::SellOfferNotFound { 
                 message: format!("SellOffer for {} not found!",token_id).to_string() } );
       
         }
-        Ok(())
+        Ok(so)
     }
    
 }
