@@ -39,7 +39,9 @@ pub fn sell_offers_store<'a>() -> IndexedMap<'a,(Addr,String), SellOffer, SellOf
 
 
 
-/* MultiIndex doesn't seem to work properly, the last error known
+/* 
+04/Apr/23 <ketyung@techchee.com>
+MultiIndex doesn't seem to work accordingly, the last error known
 was ParseErr { target_type: "pix0_market_contract::state::BuyOffer", msg: "missing field `owner`" }*/
 /* 
 pub struct BuyOfferIndexes<'a> {
