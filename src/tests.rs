@@ -227,17 +227,20 @@ mod tests {
                 println!("{}.b::{:?}\n",(i+1), b);
             }
         }
+
+        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_002"));
+        println!("Cancel.sell.offer.res:{:?}", res);
         
-        let res = get_buy_offers_by(deps.as_ref(), soid2.clone(), None, None, None);
+        let res = get_buy_offers_by(deps.as_ref(), soid.clone(), None, None, None);
 
         if res.is_ok() {
 
-            println!("\nBuy offers by sell offer id:{}::", soid2);
+            println!("\nBuy offers by sell offer id:{}::", soid);
 
             for (i,b) in res.ok().unwrap().offers.iter().enumerate() {
 
                 println!("{}.b::{:?}\n",(i+1) , b);
-                assert_eq!(b.sell_offer_id, soid2 );
+                assert_eq!(b.sell_offer_id, soid );
             }
         }
         
