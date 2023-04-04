@@ -64,7 +64,7 @@ pub fn buy_offers_store<'a>() -> IndexedMap<'a,(Addr,String), BuyOffer, BuyOffer
         offers : UniqueIndex::new(|s| (s.owner.clone(),
         s.sell_offer_id.clone()), "BUY_OFFERS"),
 
-        sell_offers : MultiIndex::new(|s| 
+        sell_offers : MultiIndex::new(|s: &BuyOffer| 
         s.sell_offer_id.clone(), 
         "BUY_OFFERS",
         "BUY_OFFERS_SELL_OFFERS"),
