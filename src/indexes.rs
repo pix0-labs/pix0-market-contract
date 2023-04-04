@@ -65,8 +65,8 @@ pub fn buy_offers_store<'a>() -> IndexedMap<'a,(Addr,String), BuyOffer, BuyOffer
         s.sell_offer_id.clone()), "BUY_OFFERS"),
 
         sell_offers : MultiIndex::new(|s| 
-        (s.sell_offer_id.clone()), 
-        "BUY_OFFERS_SOIDS",
+        s.sell_offer_id.clone(), 
+        "BUY_OFFERS",
         "BUY_OFFERS_SELL_OFFERS"),
 
     };

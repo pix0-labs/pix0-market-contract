@@ -241,8 +241,8 @@ pub fn get_buy_offers_by(deps : Deps,
         )
     }).collect();
 
-    println!("oo..x:{:?}", offers);
-    
+    println!("\nxxx.oo..x:{:?}", offers);
+
     if offers.is_err() {
 
         return Ok(BuyOffersWithParamsResponse::empty_response())
