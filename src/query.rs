@@ -9,6 +9,56 @@ pub const DEFAULT_LIMIT : u32 = 10;
 
 pub const MAX_LIMIT : u32 = 20;
 
+pub fn get_sell_offers(deps : Deps,
+    status : Option<u8>, 
+    collection_info : Option<SimpleCollectionInfo>,
+    start: Option<u32>, limit: Option<u32>) 
+    ->StdResult<SellOffersWithParamsResponse> {    
+   
+    let offers : StdResult<Vec<SellOffer>> = 
+
+    sell_offers_store()
+    .idx.offers
+    .range(deps.storage, None, None, Order::Ascending)
+    .map(|offer| {
+        
+        let (_k, s) = offer?;
+        Ok (
+            SellOffer { 
+                owner : s.owner,
+                price : s.price,
+                offer_id : s.offer_id,
+                collection_info : s.collection_info,
+                token_id : s.token_id,
+                allowed_direct_buy : s.allowed_direct_buy,
+                status : s.status,
+                deal_close_type : s.deal_close_type,
+                date_created : s.date_created,
+                date_updated : s.date_updated,
+            }
+        )
+    }).collect();
+
+
+    if offers.is_err() {
+
+        return Ok(SellOffersWithParamsResponse::empty_response())
+    
+    }
+
+    let offers = offers.unwrap();
+
+    let res : (Vec<SellOffer>,usize) = filter_sell_offer_result(offers, status, collection_info, start, limit);
+
+    Ok(SellOffersWithParamsResponse {
+        offers: res.0,
+        total : Some(res.1.try_into().unwrap_or(0)),
+        start : start,
+        limit : limit
+    })
+    
+}
+
 pub fn get_sell_offers_of(deps : Deps,
     owner : Addr, 
     status : Option<u8>, 

@@ -10,7 +10,7 @@ use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer,
 update_buy_offer, cancel_buy_offer, update_sell_offer, cancel_sell_offer, 
 transfer_to_escrow, accept_buy_offer, direct_buy};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow,
-get_buy_offers_by, get_buy_offers_of};
+get_buy_offers_by, get_buy_offers_of, get_sell_offers};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
 // version info for migration info
@@ -77,6 +77,10 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
+        QueryMsg::GetSellOffers {
+            status, collection_info, start, limit
+        } => to_binary(&get_sell_offers(_deps, status, collection_info, start , limit)?),
+
         QueryMsg::GetSellOffersOf {
             owner, status, start, limit
         } => to_binary(&get_sell_offers_of(_deps, owner, status,start , limit)?),

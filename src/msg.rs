@@ -1,6 +1,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::state::{SellOffer, BuyOffer};
+use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo};
 use cosmwasm_std::{Addr, Coin};
 use pix0_contract_common::state::{Fee, Contract};
 
@@ -83,6 +83,18 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
+
+    GetSellOffers {
+       
+        status : Option<u8>,
+
+        collection_info : Option<SimpleCollectionInfo>,
+
+        start : Option<u32>,
+
+        limit : Option<u32>,
+    },
+
 
     GetSellOffersOf {
         owner : Addr, 
