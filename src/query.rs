@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
-use crate::state::{SellOffer, BuyOffer};
+use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo};
 use crate::error::ContractError;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse};
 use std::convert::TryInto;
@@ -49,7 +49,7 @@ pub fn get_sell_offers_of(deps : Deps,
 
     let offers = offers.unwrap();
 
-    let res : (Vec<SellOffer>,usize) = filter_sell_offer_result(offers, status, start, limit);
+    let res : (Vec<SellOffer>,usize) = filter_sell_offer_result(offers, status, None, start, limit);
 
     Ok(SellOffersWithParamsResponse {
         offers: res.0,
@@ -63,6 +63,7 @@ pub fn get_sell_offers_of(deps : Deps,
 
 fn filter_sell_offer_result(offers : Vec<SellOffer>, 
     status : Option<u8>,
+    collection_info : Option<SimpleCollectionInfo>, 
     start : Option<u32>,
     limit: Option<u32>) -> (Vec<SellOffer>,usize){
 
@@ -70,7 +71,7 @@ fn filter_sell_offer_result(offers : Vec<SellOffer>,
 
     let skip = start.unwrap_or(0) as usize ;
     
-    let res = filter_sell_offer_result_all(offers, status);
+    let res = filter_sell_offer_result_all(offers, status, collection_info);
 
     (res.clone()
     .into_iter()
@@ -79,13 +80,29 @@ fn filter_sell_offer_result(offers : Vec<SellOffer>,
     .collect::<Vec<SellOffer>>(), res.len())
 }
 
+fn same_collection_info (offer : SellOffer, collection_info : SimpleCollectionInfo) -> bool {
+
+    let offer_cinfo = offer.collection_info.unwrap_or(SimpleCollectionInfo::default());
+
+    offer_cinfo.collection_name == collection_info.collection_name && 
+    offer_cinfo.collection_symbol == collection_info.collection_symbol
+}
+
 fn filter_sell_offer_result_all(offers : Vec<SellOffer>, 
-    status : Option<u8>) -> Vec<SellOffer>{
+    status : Option<u8>, collection_info : Option<SimpleCollectionInfo>) -> Vec<SellOffer>{
    
+    if  status.is_some() && collection_info.is_some() {
+
+        offers.into_iter().filter(|o| 
+        o.status == status.unwrap()
+        &&  same_collection_info(o.clone(), collection_info.clone().unwrap()) )
+        .collect::<Vec<SellOffer>>()
+    }
+    else 
     if  status.is_some() {
 
-        offers.into_iter().filter(|c| 
-        c.status == status.unwrap())
+        offers.into_iter().filter(|o| 
+        o.status == status.unwrap())
         .collect::<Vec<SellOffer>>()
     }
     else {

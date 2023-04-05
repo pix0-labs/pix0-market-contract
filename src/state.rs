@@ -24,6 +24,19 @@ pub struct SimpleCollectionInfo {
     pub category : Option<String>,
 }
 
+impl SimpleCollectionInfo {
+
+    pub fn default () -> Self {
+
+        SimpleCollectionInfo {
+            owner : Addr::unchecked(""),
+            collection_name : String::from(""),
+            collection_symbol : String::from(""),
+            category : Some(String::from("")), 
+        }
+    } 
+}
+
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct SellOffer {
