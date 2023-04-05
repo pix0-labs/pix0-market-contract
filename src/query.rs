@@ -99,7 +99,7 @@ fn filter_sell_offer_result_all(offers : Vec<SellOffer>,
         .collect::<Vec<SellOffer>>()
     }
     else 
-    if  status.is_some() {
+    if  status.is_some() && collection_info.is_none(){
 
         offers.into_iter().filter(|o| 
         o.status == status.unwrap())
