@@ -433,7 +433,6 @@ pub fn direct_buy(deps: DepsMut,
      // trigger transfer the locked NFT in contract to direct buyer
      let cmsg = trigger_send_nft_from_contract(_env, so.token_id, info.sender.to_string(), so.contract_addr)?;
 
-
     Ok(refund_all_buy_offers(deps.as_ref(), sell_offer_id).add_message(
         BankMsg::Send {
             to_address: so.owner.to_string(),
