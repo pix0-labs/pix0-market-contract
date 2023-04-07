@@ -478,23 +478,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
-name = "pix0-collection-contract"
-version = "0.5.8"
-dependencies = [
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-storage-plus 0.14.0",
- "cw2 0.14.0",
- "cw721 0.12.0",
- "cw721-base",
- "pix0-contract-common",
- "schemars",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
 name = "pix0-contract-common"
 version = "0.4.9"
 dependencies = [
@@ -508,7 +491,7 @@ dependencies = [
 
 [[package]]
 name = "pix0-market-contract"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -524,14 +507,13 @@ dependencies = [
 
 [[package]]
 name = "pix0-market-handlers"
-version = "0.1.9"
+version = "0.2.0"
 dependencies = [
  "cosmwasm-std",
  "cosmwasm-storage",
  "cw-storage-plus 0.14.0",
  "cw721 0.12.0",
  "cw721-base",
- "pix0-collection-contract",
  "pix0-contract-common",
  "schemars",
  "serde",
