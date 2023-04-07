@@ -49,7 +49,7 @@ schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
 pix0-contract-common = { version = "0.4.9", path = "../pix0-contract-common" }
-pix0-market-handlers = {version = "0.1.8", path = "../pix0-market-handlers"}
+pix0-market-handlers = {version = "0.1.9", path = "../pix0-market-handlers"}
 
 [dev-dependencies]
 cosmwasm-schema = "=1.0.0"
