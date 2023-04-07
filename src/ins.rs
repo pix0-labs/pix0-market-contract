@@ -66,6 +66,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
 
     sell_offers_store().save(deps.storage, _key, &new_offer)?;
 
+    // transfer NFT from the seller to the contract
     let cmsg = trigger_send_nft_to_contract(info, offer.token_id, offer.contract_addr)?;
 
     Ok(Response::new()
@@ -127,6 +128,7 @@ pub fn cancel_sell_offer (
     let _key = (so.owner.clone(), to_unique_token_id(contract_addr, token_id) );
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
+    // transfer token back to seller (owner of sell offer)
     let cmsg = trigger_send_nft_from_contract(env, so.token_id, so.owner.clone().to_string(), so.contract_addr)?;
 
     Ok(resp.add_message(cmsg))  
@@ -403,8 +405,11 @@ pub fn accept_buy_offer(deps: DepsMut,
     let _key = (so.owner.clone(), so.token_id.clone());
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
-   
-    Ok(accept_bo_and_refund_others(deps.as_ref(), so.owner, bo, sell_offer_id))
+    // trigger transfer the locked NFT in contract to buyer
+    let cmsg = trigger_send_nft_from_contract(_env, so.token_id, bo.owner.clone().to_string(), so.contract_addr)?;
+
+    Ok(accept_bo_and_refund_others(deps.as_ref(), so.owner, bo, sell_offer_id)
+    .add_message(cmsg))
 } 
 
 
@@ -425,11 +430,15 @@ pub fn direct_buy(deps: DepsMut,
     let _key = (so.owner.clone(), so.token_id.clone());
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
+     // trigger transfer the locked NFT in contract to direct buyer
+     let cmsg = trigger_send_nft_from_contract(_env, so.token_id, info.sender.to_string(), so.contract_addr)?;
+
+
     Ok(refund_all_buy_offers(deps.as_ref(), sell_offer_id).add_message(
         BankMsg::Send {
             to_address: so.owner.to_string(),
             amount : vec![price],
         }
-    ))
+    ).add_message(cmsg))
 } 
  
