@@ -46,7 +46,7 @@ pub struct SellOffer {
     pub owner : Addr,
 
     // The NFT contract address
-    pub contract_addr : Addr, 
+    pub contract_addr : String, 
 
     pub offer_id : Option<String>,
 
@@ -111,7 +111,7 @@ pub struct PurchaseHistory {
 }
 
 
-pub fn to_unique_token_id(contract_addr : Addr, token_id : String )->String{
+pub fn to_unique_token_id(contract_addr : String, token_id : String )->String{
 
     format!("{}-{}", contract_addr, token_id)
 }

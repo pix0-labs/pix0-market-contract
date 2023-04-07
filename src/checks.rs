@@ -29,7 +29,7 @@ pub (crate) fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -
 
 
 pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String, 
-    contract_addr : Addr ) -> Option<SellOffer> {
+    contract_addr : String ) -> Option<SellOffer> {
 
     let owner = info.clone().sender;
     
@@ -56,7 +56,7 @@ pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : Str
 
 
 pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, 
-contract_addr : Addr,    
+contract_addr : String,    
 error_on_exists : bool ) 
 -> Result<Option<SellOffer>, ContractError> {
 
@@ -116,7 +116,7 @@ Result<Option<SellOffer>, ContractError> {
 }
 
 pub (crate) fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String,
-contract_addr : Addr ) -> Result<SellOffer, ContractError>{
+contract_addr : String ) -> Result<SellOffer, ContractError>{
 
     let owner = info.clone().sender;
     

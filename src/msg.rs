@@ -35,7 +35,7 @@ pub enum ExecuteMsg {
 
         token_id : String,
 
-        contract_addr : Addr, 
+        contract_addr : String, 
     },
 
     CreateBuyOffer {

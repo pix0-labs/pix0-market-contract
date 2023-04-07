@@ -111,7 +111,7 @@ pub fn cancel_sell_offer (
     mut deps: DepsMut ,  
     info: MessageInfo,
     token_id : String, 
-    contract_addr : Addr) -> Result<Response, ContractError> {
+    contract_addr : String) -> Result<Response, ContractError> {
     
     let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone(), contract_addr)?;
 
