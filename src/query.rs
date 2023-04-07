@@ -62,7 +62,6 @@ pub fn get_sell_offers(deps : Deps,
 
 pub fn get_sell_offers_of(deps : Deps,
     owner : Addr, 
-    contract_addr : Addr, 
     status : Option<u8>, 
     start: Option<u32>, limit: Option<u32>) 
     ->StdResult<SellOffersWithParamsResponse> {    
@@ -71,7 +70,7 @@ pub fn get_sell_offers_of(deps : Deps,
 
     sell_offers_store()
     .idx.offers
-    .prefix((owner, contract_addr))
+    .prefix(owner)
     .range(deps.storage, None, None, Order::Ascending)
     .map(|offer| {
         

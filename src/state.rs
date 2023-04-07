@@ -79,7 +79,6 @@ impl SellOffer {
 }
 
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct BuyOffer {
 
@@ -109,4 +108,10 @@ pub struct PurchaseHistory {
 
     pub date_created : Option<Timestamp>,
    
+}
+
+
+pub fn to_unique_token_id(contract_addr : Addr, token_id : String )->String{
+
+    format!("{}-{}", contract_addr, token_id)
 }

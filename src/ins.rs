@@ -1,6 +1,6 @@
 use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED,
-DEAL_CLOSED_AT_DIRECT_BUY};
+DEAL_CLOSED_AT_DIRECT_BUY, to_unique_token_id};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
 use crate::checks::*;
@@ -46,7 +46,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
  
     let new_offer = SellOffer {
         owner : owner.clone(),
-        contract_addr : offer.contract_addr,
+        contract_addr : offer.contract_addr.clone(),
         token_id : offer.token_id.clone(),
         offer_id : offer_id,
         price : offer.price,
@@ -62,7 +62,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     info, "CREATE_SELL_OFFER_FEE")?;
  
 
-    let _key = (owner, offer.contract_addr, offer.token_id );
+    let _key = (owner, to_unique_token_id(offer.contract_addr, offer.token_id) );
 
     sell_offers_store().save(deps.storage, _key, &new_offer)?;
 
@@ -82,7 +82,7 @@ pub fn update_sell_offer(deps: DepsMut,
     let owner = info.clone().sender;
 
     let so = check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), 
-    sell_offer.contract_addr, false)?;
+    sell_offer.contract_addr.clone(), false)?;
 
     let mut offer_to_update = so.unwrap();
 
@@ -95,7 +95,8 @@ pub fn update_sell_offer(deps: DepsMut,
 
     offer_to_update.date_updated = Some(_env.block.time);
 
-    let _key = (owner,  sell_offer.token_id);
+    let _key = (owner, 
+        to_unique_token_id(sell_offer.contract_addr, sell_offer.token_id));
 
     sell_offers_store().save(deps.storage, _key.clone(), &offer_to_update)?;
     

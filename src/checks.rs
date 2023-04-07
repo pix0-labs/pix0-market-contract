@@ -1,7 +1,7 @@
 use cosmwasm_std::{Deps, MessageInfo, Addr, Uint128, Coin };
 use crate::error::ContractError;
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
-use crate::state::{SellOffer, SELL_STATUS_CLOSED};
+use crate::state::{SellOffer, SELL_STATUS_CLOSED, to_unique_token_id};
 
 pub (crate) fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -> Option<SellOffer> {
    
@@ -33,7 +33,7 @@ pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : Str
 
     let owner = info.clone().sender;
     
-    let _key = (owner, contract_addr, token_id);
+    let _key = (owner, to_unique_token_id(contract_addr, token_id));
 
     let loaded_sell_offer = sell_offers_store()
     .idx.offers.item(deps.storage, _key);
@@ -120,7 +120,7 @@ contract_addr : Addr ) -> Result<SellOffer, ContractError>{
 
     let owner = info.clone().sender;
     
-    let _key = (owner, contract_addr, token_id.clone());
+    let _key = (owner, to_unique_token_id(contract_addr,token_id.clone()));
 
     let loaded_sell_offer = sell_offers_store()
     .idx.offers.item(deps.storage, _key);

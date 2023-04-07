@@ -100,9 +100,7 @@ pub enum QueryMsg {
 
     GetSellOffersOf {
         owner : Addr, 
-
-        contract_addr : Addr,
-        
+    
         status : Option<u8>,
 
         start : Option<u32>,

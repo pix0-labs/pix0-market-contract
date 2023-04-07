@@ -1,14 +1,14 @@
 use crate::state::{ SellOffer, PurchaseHistory, BuyOffer};
 use cosmwasm_std::Addr;
 use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map};
-
+use crate::state::to_unique_token_id;
 pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::new("PIX0_PHIST_STORE");
 
 pub const BUY_OFFERS_STORE : Map<(String, Addr), BuyOffer> = Map::new("PIX0_BUY_OFFERS_STORE");
 
 pub struct SellOfferIndexes<'a> {
 
-    pub offers : UniqueIndex<'a, (Addr,Addr,String), SellOffer>,
+    pub offers : UniqueIndex<'a, (Addr,String), SellOffer>,
 
     pub offers_by_id : UniqueIndex<'a, String, SellOffer>,
 }
@@ -28,8 +28,8 @@ pub fn sell_offers_store<'a>() -> IndexedMap<'a,(Addr,String), SellOffer, SellOf
     let indexes = SellOfferIndexes {
 
         offers : UniqueIndex::new(|s| (s.owner.clone(),
-        s.contract_addr.clone(), 
-        s.token_id.clone()), "SELL_OFFERS"),
+        to_unique_token_id(s.contract_addr.clone(), 
+        s.token_id.clone())), "SELL_OFFERS"),
 
         offers_by_id :  UniqueIndex::new(|s|  
         s.offer_id.clone().unwrap_or(String::from("unknown_id")), "SELL_OFFERS_BY_ID"),

@@ -83,8 +83,8 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         } => to_binary(&get_sell_offers(_deps, status, collection_info, start , limit)?),
 
         QueryMsg::GetSellOffersOf {
-            owner, contract_addr, status, start, limit
-        } => to_binary(&get_sell_offers_of(_deps, owner, contract_addr, status,start , limit)?),
+            owner, status, start, limit
+        } => to_binary(&get_sell_offers_of(_deps, owner, status,start , limit)?),
 
         QueryMsg::GetSellOfferById {
             offer_id
