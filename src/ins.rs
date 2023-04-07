@@ -7,7 +7,7 @@ use crate::checks::*;
 use crate::query::{internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
-
+use pix0_market_handlers::triggers::{trigger_send_nft_to_contract, trigger_send_nft_from_contract};
 /*
 Wrapper function
 */
@@ -59,17 +59,19 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     };
 
     let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
-    info, "CREATE_SELL_OFFER_FEE")?;
+    info.clone(), "CREATE_SELL_OFFER_FEE")?;
  
 
-    let _key = (owner, to_unique_token_id(offer.contract_addr, offer.token_id) );
+    let _key = (owner, to_unique_token_id(offer.contract_addr.clone(), offer.token_id.clone()) );
 
     sell_offers_store().save(deps.storage, _key, &new_offer)?;
 
+    let cmsg = trigger_send_nft_to_contract(info, offer.token_id, offer.contract_addr)?;
 
     Ok(Response::new()
     .add_messages(bmsgs)
-    .add_attribute("action", "create-sell-offer"))
+    .add_attribute("action", "create-sell-offer")
+    .add_message(cmsg))
     
 
 }
@@ -109,11 +111,12 @@ pub fn update_sell_offer(deps: DepsMut,
 
 pub fn cancel_sell_offer (
     mut deps: DepsMut ,  
+    env : Env,
     info: MessageInfo,
     token_id : String, 
     contract_addr : String) -> Result<Response, ContractError> {
     
-    let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone(), contract_addr)?;
+    let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone(), contract_addr.clone())?;
 
     // refund all buy offers first before cancelling them!
     let resp = refund_all_buy_offers(deps.as_ref(), so.offer_id.clone().unwrap())
@@ -121,10 +124,12 @@ pub fn cancel_sell_offer (
 
     cancel_all_buy_offers(deps.branch(), so.offer_id.unwrap(), None);
 
-    let _key = (so.owner, token_id );
+    let _key = (so.owner.clone(), to_unique_token_id(contract_addr, token_id) );
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
 
-    Ok(resp)  
+    let cmsg = trigger_send_nft_from_contract(env, so.token_id, so.owner.clone().to_string(), so.contract_addr)?;
+
+    Ok(resp.add_message(cmsg))  
 
 }
 

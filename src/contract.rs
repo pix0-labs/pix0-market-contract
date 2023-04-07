@@ -53,7 +53,7 @@ pub fn execute(
         ExecuteMsg::UpdateSellOffer { offer } => update_sell_offer(deps, _env,_info, offer),
       
         ExecuteMsg::CancelSellOffer { token_id , contract_addr} => 
-        cancel_sell_offer(deps, _info, token_id, contract_addr),
+        cancel_sell_offer(deps, _env, _info, token_id, contract_addr),
 
         ExecuteMsg::CreateBuyOffer { buy_offer, sell_offer_id } => 
         create_buy_offer(deps, _env,_info, buy_offer, sell_offer_id),

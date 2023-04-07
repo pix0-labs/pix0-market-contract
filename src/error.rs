@@ -47,6 +47,9 @@ pub enum ContractError {
     #[error("SellOfferIsAlreadyClosed")]
     SellOfferIsAlreadyClosed { message : String },
 
+    #[error("FailedToTransferNft")]
+    FailedToTransferNft { message : String },
+
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
 }
@@ -63,6 +66,25 @@ impl From<CommonContractError> for ContractError {
 
             CommonContractError::ErrorMakingPayment { message } => 
             ContractError::ErrorPayingContractTreasuries { message:  message }
+            ,
+
+            _ => ContractError::CustomErrorMesg { message: "Custom error".to_string() }
+
+        }
+    }
+}
+
+
+pub type MContractError = pix0_market_handlers::error::ContractError;
+
+impl From<MContractError> for ContractError {
+    fn from(error : MContractError) -> ContractError {
+        
+        match error {
+
+            
+            MContractError::FailedToTransferNft { text } => 
+            ContractError::FailedToTransferNft { message:  text }
             ,
 
             _ => ContractError::CustomErrorMesg { message: "Custom error".to_string() }
