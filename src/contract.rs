@@ -52,7 +52,8 @@ pub fn execute(
 
         ExecuteMsg::UpdateSellOffer { offer } => update_sell_offer(deps, _env,_info, offer),
       
-        ExecuteMsg::CancelSellOffer { token_id } => cancel_sell_offer(deps, _info, token_id),
+        ExecuteMsg::CancelSellOffer { token_id , contract_addr} => 
+        cancel_sell_offer(deps, _info, token_id, contract_addr),
 
         ExecuteMsg::CreateBuyOffer { buy_offer, sell_offer_id } => 
         create_buy_offer(deps, _env,_info, buy_offer, sell_offer_id),
@@ -82,8 +83,8 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         } => to_binary(&get_sell_offers(_deps, status, collection_info, start , limit)?),
 
         QueryMsg::GetSellOffersOf {
-            owner, status, start, limit
-        } => to_binary(&get_sell_offers_of(_deps, owner, status,start , limit)?),
+            owner, contract_addr, status, start, limit
+        } => to_binary(&get_sell_offers_of(_deps, owner, contract_addr, status,start , limit)?),
 
         QueryMsg::GetSellOfferById {
             offer_id

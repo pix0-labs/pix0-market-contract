@@ -105,6 +105,8 @@ mod tests {
 
         let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
 
+        let contract_addr = mock_env().contract.address;
+
         let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
         let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
 
@@ -112,11 +114,13 @@ mod tests {
        
         loop_create_so(deps.as_mut(), info.clone(),10, owner, false, 2 );
 
-        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), String::from("Tk_005"));
+        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), 
+        String::from("Tk_005"), contract_addr.clone());
 
         println!("Removed.res:{:?}\n",res);
 
-        let res = get_sell_offers_of(deps.as_ref(), Addr::unchecked(owner), None, None, None);
+        let res = get_sell_offers_of(deps.as_ref(), 
+        Addr::unchecked(owner), contract_addr, None, None, None);
 
         for (index, o) in res.ok().unwrap().offers.iter().enumerate() {
 
@@ -201,7 +205,9 @@ mod tests {
         
         loop_create_so(deps.as_mut(), info.clone(),3, owner, true, 0 );
 
-        let res = get_sell_offers_of(deps.as_ref(), Addr::unchecked(owner), None, None, None);
+        let res = get_sell_offers_of(deps.as_ref(), 
+        Addr::unchecked(owner), mock_env().contract.address, 
+        None, None, None);
 
         for (index, o) in res.ok().unwrap().offers.iter().enumerate() {
 

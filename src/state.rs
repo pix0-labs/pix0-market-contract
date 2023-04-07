@@ -45,6 +45,9 @@ pub struct SellOffer {
 
     pub owner : Addr,
 
+    // The NFT contract address
+    pub contract_addr : Addr, 
+
     pub offer_id : Option<String>,
 
     pub collection_info : Option<SimpleCollectionInfo>,
@@ -68,7 +71,7 @@ impl SellOffer {
 
     pub fn to_offer_id(&self) -> Option<String> {
 
-        let key = (self.owner.clone(), self.token_id.clone());
+        let key = (self.owner.clone(), self.contract_addr.clone(), self.token_id.clone());
 
         return Some(offer_id(&key));
         

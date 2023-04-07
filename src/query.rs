@@ -27,6 +27,7 @@ pub fn get_sell_offers(deps : Deps,
             SellOffer { 
                 owner : s.owner,
                 price : s.price,
+                contract_addr : s.contract_addr,
                 offer_id : s.offer_id,
                 collection_info : s.collection_info,
                 token_id : s.token_id,
@@ -61,6 +62,7 @@ pub fn get_sell_offers(deps : Deps,
 
 pub fn get_sell_offers_of(deps : Deps,
     owner : Addr, 
+    contract_addr : Addr, 
     status : Option<u8>, 
     start: Option<u32>, limit: Option<u32>) 
     ->StdResult<SellOffersWithParamsResponse> {    
@@ -69,7 +71,7 @@ pub fn get_sell_offers_of(deps : Deps,
 
     sell_offers_store()
     .idx.offers
-    .prefix(owner)
+    .prefix((owner, contract_addr))
     .range(deps.storage, None, None, Order::Ascending)
     .map(|offer| {
         
@@ -78,6 +80,7 @@ pub fn get_sell_offers_of(deps : Deps,
             SellOffer { 
                 owner : s.owner,
                 price : s.price,
+                contract_addr : s.contract_addr,
                 offer_id : s.offer_id,
                 collection_info : s.collection_info,
                 token_id : s.token_id,

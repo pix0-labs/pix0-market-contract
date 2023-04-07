@@ -34,6 +34,8 @@ pub enum ExecuteMsg {
     CancelSellOffer {
 
         token_id : String,
+
+        contract_addr : Addr, 
     },
 
     CreateBuyOffer {
@@ -99,6 +101,8 @@ pub enum QueryMsg {
     GetSellOffersOf {
         owner : Addr, 
 
+        contract_addr : Addr,
+        
         status : Option<u8>,
 
         start : Option<u32>,

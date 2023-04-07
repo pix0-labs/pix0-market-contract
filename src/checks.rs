@@ -28,11 +28,12 @@ pub (crate) fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -
 }
 
 
-pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String ) -> Option<SellOffer> {
+pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String, 
+    contract_addr : Addr ) -> Option<SellOffer> {
 
     let owner = info.clone().sender;
     
-    let _key = (owner, token_id);
+    let _key = (owner, contract_addr, token_id);
 
     let loaded_sell_offer = sell_offers_store()
     .idx.offers.item(deps.storage, _key);
@@ -54,11 +55,13 @@ pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : Str
 }
 
 
-pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, error_on_exists : bool ) 
+pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, 
+contract_addr : Addr,    
+error_on_exists : bool ) 
 -> Result<Option<SellOffer>, ContractError> {
 
     if error_on_exists {
-        let so = sell_offer_exists(&deps, info.clone(), token_id.clone());
+        let so = sell_offer_exists(&deps, info.clone(), token_id.clone(), contract_addr);
         
         if so.is_some() {
 
@@ -70,7 +73,7 @@ pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_i
     }
     else {
 
-        let so = sell_offer_exists(&deps, info.clone(), token_id.clone());
+        let so = sell_offer_exists(&deps, info.clone(), token_id.clone(), contract_addr);
 
         if so.is_none() {
 
@@ -112,11 +115,12 @@ Result<Option<SellOffer>, ContractError> {
    
 }
 
-pub (crate) fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String ) -> Result<SellOffer, ContractError>{
+pub (crate) fn check_sell_offer_cancellable( deps: &Deps, info: MessageInfo, token_id : String,
+contract_addr : Addr ) -> Result<SellOffer, ContractError>{
 
     let owner = info.clone().sender;
     
-    let _key = (owner, token_id.clone());
+    let _key = (owner, contract_addr, token_id.clone());
 
     let loaded_sell_offer = sell_offers_store()
     .idx.offers.item(deps.storage, _key);

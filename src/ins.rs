@@ -35,7 +35,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
 
     let owner = info.clone().sender;
 
-    check_sell_offer_exists (&deps.as_ref(), &info, offer.token_id.clone(), true )?;
+    check_sell_offer_exists (&deps.as_ref(), &info, offer.token_id.clone(), offer.contract_addr.clone(), true )?;
 
     let date_created = _env.block.time;
 
@@ -46,6 +46,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
  
     let new_offer = SellOffer {
         owner : owner.clone(),
+        contract_addr : offer.contract_addr,
         token_id : offer.token_id.clone(),
         offer_id : offer_id,
         price : offer.price,
@@ -61,9 +62,9 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     info, "CREATE_SELL_OFFER_FEE")?;
  
 
-    let _key = (owner, offer.token_id );
+    let _key = (owner, offer.contract_addr, offer.token_id );
 
-    sell_offers_store().save(deps.storage, _key.clone(), &new_offer)?;
+    sell_offers_store().save(deps.storage, _key, &new_offer)?;
 
 
     Ok(Response::new()
@@ -80,7 +81,8 @@ pub fn update_sell_offer(deps: DepsMut,
 
     let owner = info.clone().sender;
 
-    let so = check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), false)?;
+    let so = check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), 
+    sell_offer.contract_addr, false)?;
 
     let mut offer_to_update = so.unwrap();
 
@@ -93,7 +95,7 @@ pub fn update_sell_offer(deps: DepsMut,
 
     offer_to_update.date_updated = Some(_env.block.time);
 
-    let _key = (owner, sell_offer.token_id);
+    let _key = (owner,  sell_offer.token_id);
 
     sell_offers_store().save(deps.storage, _key.clone(), &offer_to_update)?;
     
@@ -107,9 +109,10 @@ pub fn update_sell_offer(deps: DepsMut,
 pub fn cancel_sell_offer (
     mut deps: DepsMut ,  
     info: MessageInfo,
-    token_id : String) -> Result<Response, ContractError> {
+    token_id : String, 
+    contract_addr : Addr) -> Result<Response, ContractError> {
     
-    let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone())?;
+    let so = check_sell_offer_cancellable (&deps.as_ref(), info, token_id.clone(), contract_addr)?;
 
     // refund all buy offers first before cancelling them!
     let resp = refund_all_buy_offers(deps.as_ref(), so.offer_id.clone().unwrap())
