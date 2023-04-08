@@ -1,7 +1,8 @@
 use cosmwasm_std::{Deps, MessageInfo, Addr, Uint128, Coin };
 use crate::error::ContractError;
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
-use crate::state::{SellOffer, SELL_STATUS_CLOSED, to_unique_token_id};
+use crate::state::{SellOffer, SELL_STATUS_CLOSED};
+use crate::utils:: to_unique_token_id;
 
 pub (crate) fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -> Option<SellOffer> {
    

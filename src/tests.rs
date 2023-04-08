@@ -45,8 +45,8 @@ mod tests {
 
     }
 
-    fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, running_offer_id : bool,
-    status : u8 ) {
+    fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, 
+    contract_addr : String, running_offer_id : bool, status : u8 ) {
 
         for x in 0..(max+1) {
      
@@ -67,6 +67,7 @@ mod tests {
                 token_id : tid, 
                 owner : Addr::unchecked(owner), 
                 collection_info : None,
+                contract_addr : contract_addr.clone(),
                 offer_id : oid, 
                 price : price, 
                 status : status ,
@@ -112,15 +113,15 @@ mod tests {
 
         inst(deps.as_mut(), info.clone(), owner);
        
-        loop_create_so(deps.as_mut(), info.clone(),10, owner, false, 2 );
+        loop_create_so(deps.as_mut(), info.clone(),10, owner, contract_addr.clone().to_string(), false, 2 );
 
-        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), 
-        String::from("Tk_005"), contract_addr.clone());
+        let res = cancel_sell_offer(deps.as_mut(), mock_env(),  info.clone(), 
+        String::from("Tk_005"), contract_addr.to_string());
 
         println!("Removed.res:{:?}\n",res);
 
         let res = get_sell_offers_of(deps.as_ref(), 
-        Addr::unchecked(owner), contract_addr, None, None, None);
+        Addr::unchecked(owner), None, None, None);
 
         for (index, o) in res.ok().unwrap().offers.iter().enumerate() {
 
@@ -128,7 +129,7 @@ mod tests {
         }
 
     
-        let oid = String::from("OF4282D6668CBCC8EF");
+        let oid = String::from("OF3AA12063E9E65BDD");
 
         let o = internal_get_sell_offer_by_id(deps.as_ref(), oid.clone());
 
@@ -203,10 +204,11 @@ mod tests {
 
         inst(deps.as_mut(), info.clone(), owner);
         
-        loop_create_so(deps.as_mut(), info.clone(),3, owner, true, 0 );
+        loop_create_so(deps.as_mut(), info.clone(),3, owner, mock_env().contract.address.to_string(), 
+        true, 0 );
 
         let res = get_sell_offers_of(deps.as_ref(), 
-        Addr::unchecked(owner), mock_env().contract.address, 
+        Addr::unchecked(owner), 
         None, None, None);
 
         for (index, o) in res.ok().unwrap().offers.iter().enumerate() {
@@ -236,7 +238,9 @@ mod tests {
 
         let tid_to_cancel = String::from("Tk_002");
 
-        let res = cancel_sell_offer(deps.as_mut(),  info.clone(), tid_to_cancel.clone());
+        let res = cancel_sell_offer(deps.as_mut(),  
+        mock_env(), info.clone(), tid_to_cancel.clone(),
+        mock_env().contract.address.to_string());
         println!("Cancel.sell.offer:{}.res:\n{:?}", tid_to_cancel, res);
         
         let res = get_buy_offers_by(deps.as_ref(), soid.clone(), None, None, None);

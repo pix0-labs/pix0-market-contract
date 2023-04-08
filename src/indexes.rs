@@ -1,10 +1,13 @@
-use crate::state::{ SellOffer, PurchaseHistory, BuyOffer};
+use crate::state::{ SellOffer, PurchaseHistory, BuyOffer, SimpleCollectionInfo};
 use cosmwasm_std::Addr;
 use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map};
-use crate::state::to_unique_token_id;
+use crate::utils::to_unique_token_id;
+
 pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::new("PIX0_PHIST_STORE");
 
 pub const BUY_OFFERS_STORE : Map<(String, Addr), BuyOffer> = Map::new("PIX0_BUY_OFFERS_STORE");
+
+pub const COLLECTION_INDEX : Map<String, SimpleCollectionInfo> = Map::new("PIX0_COLLECTION_INDEX");
 
 pub struct SellOfferIndexes<'a> {
 

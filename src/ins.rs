@@ -1,9 +1,10 @@
 use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute};
 use crate::state::{SellOffer, SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED,
-DEAL_CLOSED_AT_DIRECT_BUY, to_unique_token_id};
+DEAL_CLOSED_AT_DIRECT_BUY};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
 use crate::error::ContractError;
 use crate::checks::*;
+use crate::utils::to_unique_token_id;
 use crate::query::{internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy_offers_by};
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};

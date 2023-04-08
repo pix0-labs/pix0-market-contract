@@ -111,7 +111,3 @@ pub struct PurchaseHistory {
 }
 
 
-pub fn to_unique_token_id(contract_addr : String, token_id : String )->String{
-
-    format!("{}-{}", contract_addr, token_id)
-}
