@@ -39,6 +39,14 @@ impl SimpleCollectionInfo {
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct CollectionIndex {
+
+    pub collection_info : SimpleCollectionInfo,
+
+    pub number_of_sell_offers : u32, 
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct SellOffer {
 
     pub token_id : String, 

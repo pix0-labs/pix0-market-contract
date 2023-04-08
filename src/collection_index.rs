@@ -1,10 +1,11 @@
-use cosmwasm_std::Deps;
-use crate::{indexes::COLLECTION_INDEX, state::SimpleCollectionInfo};
+use cosmwasm_std::{Deps, DepsMut};
+use crate::indexes::COLLECTION_INDEX;
+use crate::state::{SimpleCollectionInfo, CollectionIndex};
 use crate::utils::to_collection_id;
 
 #[allow(dead_code)]
 pub (crate) fn collection_exists( deps: &Deps, collection_info :
-SimpleCollectionInfo) -> Option<SimpleCollectionInfo> {
+SimpleCollectionInfo) -> Option<CollectionIndex> {
 
     
     let _key = to_collection_id(collection_info);
@@ -23,6 +24,38 @@ SimpleCollectionInfo) -> Option<SimpleCollectionInfo> {
         },
 
         Err(_)=> None, 
+    }
+
+}
+
+#[allow(dead_code)]
+pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
+    Option<SimpleCollectionInfo>)   {
+    
+    if collection_info.is_some() {
+
+        let collection_info = collection_info.unwrap();
+
+        let collection_index = collection_exists(&deps.as_ref(),
+            collection_info.clone());
+
+        let mut new_collection_index = CollectionIndex {
+
+            collection_info : collection_info.clone(),
+            number_of_sell_offers : 1, 
+        };
+
+        if collection_index.is_some() {
+            new_collection_index = collection_index.unwrap();
+            new_collection_index.number_of_sell_offers += 1;
+        }
+
+        let _key = to_collection_id(collection_info);
+
+        //ignore the error
+        let _ = COLLECTION_INDEX.save(deps.storage, _key, &new_collection_index);
+
+
     }
 
 }
