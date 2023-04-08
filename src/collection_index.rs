@@ -55,7 +55,37 @@ pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
         //ignore the error
         let _ = COLLECTION_INDEX.save(deps.storage, _key, &new_collection_index);
 
+    }
 
+}
+
+
+#[allow(dead_code)]
+pub (crate) fn remove_sell_offer(deps: DepsMut, collection_info :
+    Option<SimpleCollectionInfo>)   {
+    
+    if collection_info.is_some() {
+
+        let collection_info = collection_info.unwrap();
+
+        let collection_index = collection_exists(&deps.as_ref(),
+            collection_info.clone());
+
+        if collection_index.is_some() {
+            let mut collection_index = collection_index.unwrap();
+            collection_index.number_of_sell_offers -= 1;
+            let _key = to_collection_id(collection_info);
+
+            if collection_index.number_of_sell_offers == 0 {
+
+                let _ = COLLECTION_INDEX.remove(deps.storage, _key);
+            }
+            else {
+
+                let _ = COLLECTION_INDEX.save(deps.storage, _key, &collection_index);
+            }
+        }
+   
     }
 
 }
