@@ -1,9 +1,12 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
-use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
-use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo};
+use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE, COLLECTION_INDEX_STORE};
+use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo, CollectionIndex};
 use crate::error::ContractError;
-use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse};
+use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse,
+    CollectionIndexesWithParamsResponse};
 use std::convert::TryInto;
+
+
 
 pub const DEFAULT_LIMIT : u32 = 10;
 
@@ -425,6 +428,100 @@ fn filter_buy_offer_result_all(offers : Vec<BuyOffer>,
     else {
 
        offers      
+    }
+
+}
+
+
+
+pub fn get_indexed_collections(deps : Deps,
+    category : Option<String>,
+    start: Option<u32>, limit: Option<u32>) 
+    ->StdResult<CollectionIndexesWithParamsResponse> {    
+   
+    let offers : StdResult<Vec<CollectionIndex>> = 
+
+    COLLECTION_INDEX_STORE
+    .range(deps.storage, None, None, Order::Ascending)
+    .map(|offer| {
+        
+        let (_k, c) = offer?;
+        Ok (
+            CollectionIndex { 
+                
+                collection_info : c.collection_info,
+                number_of_sell_offers : c.number_of_sell_offers,
+            }
+        )
+    }).collect();
+
+
+    if offers.is_err() {
+
+        return Ok(CollectionIndexesWithParamsResponse::empty_response())
+    
+    }
+
+    let collection_indexes = offers.unwrap();
+
+    let res : (Vec<CollectionIndex>,usize) = filter_collection_index_result(collection_indexes, 
+        category, start, limit);
+
+    Ok(CollectionIndexesWithParamsResponse {
+        offers: res.0,
+        total : Some(res.1.try_into().unwrap_or(0)),
+        start : start,
+        limit : limit
+    })
+    
+}
+
+
+fn filter_collection_index_result(collection_indexes : Vec<CollectionIndex>, 
+    category : Option<String>,
+    start : Option<u32>,
+    limit: Option<u32>) -> (Vec<CollectionIndex>,usize){
+
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+
+    let skip = start.unwrap_or(0) as usize ;
+    
+    let res = filter_collection_index_result_all(collection_indexes, category);
+
+    (res.clone()
+    .into_iter()
+    .skip(skip)
+    .take(limit)
+    .collect::<Vec<CollectionIndex>>(), res.len())
+}
+
+fn compare_category (collection_index : &CollectionIndex, category : String ) -> bool {
+
+    if collection_index.collection_info.category.is_some() {
+
+        collection_index.collection_info.category.clone().unwrap() == category
+    }
+    else {
+
+        false 
+    }
+
+}
+ 
+
+fn filter_collection_index_result_all(collection_indexes : Vec<CollectionIndex> ,
+    category : Option<String>) -> Vec<CollectionIndex>{
+   
+    if  category.is_some() {
+
+        collection_indexes.into_iter().filter(|c|
+            compare_category(c, category.clone().unwrap()) 
+         )
+        .collect::<Vec<CollectionIndex>>()
+    }
+    else {
+
+       collection_indexes     
     }
 
 }

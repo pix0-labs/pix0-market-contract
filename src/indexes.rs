@@ -7,7 +7,7 @@ pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::ne
 
 pub const BUY_OFFERS_STORE : Map<(String, Addr), BuyOffer> = Map::new("PIX0_BUY_OFFERS_STORE");
 
-pub const COLLECTION_INDEX : Map<String, CollectionIndex> = Map::new("PIX0_COLLECTION_INDEX");
+pub const COLLECTION_INDEX_STORE : Map<String, CollectionIndex> = Map::new("PIX0_COLLECTION_INDEX_STORE");
 
 pub struct SellOfferIndexes<'a> {
 

@@ -1,5 +1,5 @@
 use cosmwasm_std::{Deps, DepsMut};
-use crate::indexes::COLLECTION_INDEX;
+use crate::indexes::COLLECTION_INDEX_STORE;
 use crate::state::{SimpleCollectionInfo, CollectionIndex};
 use crate::utils::to_collection_id;
 
@@ -10,7 +10,7 @@ SimpleCollectionInfo) -> Option<CollectionIndex> {
     
     let _key = to_collection_id(collection_info);
 
-    let loaded_coll = COLLECTION_INDEX.may_load(deps.storage, _key);
+    let loaded_coll = COLLECTION_INDEX_STORE.may_load(deps.storage, _key);
     
     match loaded_coll {
 
@@ -53,7 +53,7 @@ pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
         let _key = to_collection_id(collection_info);
 
         //ignore the error
-        let _ = COLLECTION_INDEX.save(deps.storage, _key, &new_collection_index);
+        let _ = COLLECTION_INDEX_STORE.save(deps.storage, _key, &new_collection_index);
 
     }
 
@@ -78,15 +78,17 @@ pub (crate) fn remove_sell_offer_from_index(deps: DepsMut, collection_info :
 
             if collection_index.number_of_sell_offers == 0 {
 
-                let _ = COLLECTION_INDEX.remove(deps.storage, _key);
+                let _ = COLLECTION_INDEX_STORE.remove(deps.storage, _key);
             }
             else {
 
-                let _ = COLLECTION_INDEX.save(deps.storage, _key, &collection_index);
+                let _ = COLLECTION_INDEX_STORE.save(deps.storage, _key, &collection_index);
             }
         }
    
     }
 
 }
+
+
 

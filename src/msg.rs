@@ -1,6 +1,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo};
+use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo, CollectionIndex};
 use cosmwasm_std::{Addr, Coin};
 use pix0_contract_common::state::{Fee, Contract};
 
@@ -195,6 +195,34 @@ impl BuyOffersWithParamsResponse {
     }
 }
 
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct CollectionIndexesWithParamsResponse {
+    
+    pub offers : Vec<CollectionIndex>,
+
+    pub total : Option<u32>,
+
+    pub start : Option<u32>,
+
+    pub limit : Option<u32>,
+}
+
+
+
+impl CollectionIndexesWithParamsResponse {
+
+    pub fn empty_response() -> Self {
+
+        CollectionIndexesWithParamsResponse {
+            offers: vec![],
+            total : None,
+            start : None,
+            limit : None, 
+        }
+    }
+}
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
