@@ -9,6 +9,7 @@ use crate::query::{internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 use pix0_market_handlers::triggers::{trigger_send_nft_to_contract, trigger_send_nft_from_contract};
+use crate::collection_index::{save_collection_index, remove_sell_offer_from_index};
 /*
 Wrapper function
 */
@@ -51,7 +52,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
         token_id : offer.token_id.clone(),
         offer_id : offer_id,
         price : offer.price,
-        collection_info : offer.collection_info,
+        collection_info : offer.collection_info.clone(),
         allowed_direct_buy : offer.allowed_direct_buy,
         status : SELL_STATUS_NEW,
         deal_close_type : None, 
@@ -66,6 +67,8 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     let _key = (owner, to_unique_token_id(offer.contract_addr.clone(), offer.token_id.clone()) );
 
     sell_offers_store().save(deps.storage, _key, &new_offer)?;
+
+    save_collection_index(deps, offer.collection_info);
 
     // transfer NFT from the seller to the contract
     let cmsg = trigger_send_nft_to_contract(info, offer.token_id, offer.contract_addr)?;
@@ -128,6 +131,8 @@ pub fn cancel_sell_offer (
 
     let _key = (so.owner.clone(), to_unique_token_id(contract_addr, token_id) );
     sell_offers_store().remove(deps.branch().storage, _key.clone())?;
+
+    remove_sell_offer_from_index(deps, so.collection_info);
 
     // transfer token back to seller (owner of sell offer)
     let cmsg = trigger_send_nft_from_contract(env, so.token_id, so.owner.clone().to_string(), so.contract_addr)?;
@@ -378,7 +383,7 @@ fn get_buy_offer_checked (deps: Deps, owner : Addr, sell_offer_id : String) -> R
     Ok(buy_offer)
 }
 
-pub fn accept_buy_offer(deps: DepsMut, 
+pub fn accept_buy_offer(mut deps: DepsMut, 
     _env : Env, info: MessageInfo,
     buy_offer_by : Addr, 
     sell_offer_id : String )  -> Result<Response, ContractError> {
@@ -406,6 +411,9 @@ pub fn accept_buy_offer(deps: DepsMut,
     let _key = (so.owner.clone(), so.token_id.clone());
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
+    // remove the sell offer from collection index
+    remove_sell_offer_from_index(deps.branch(), so.collection_info);
+
     // trigger transfer the locked NFT in contract to buyer
     let cmsg = trigger_send_nft_from_contract(_env, so.token_id, bo.owner.clone().to_string(), so.contract_addr)?;
 
@@ -414,7 +422,7 @@ pub fn accept_buy_offer(deps: DepsMut,
 } 
 
 
-pub fn direct_buy(deps: DepsMut, 
+pub fn direct_buy(mut deps: DepsMut, 
     _env : Env, info: MessageInfo, 
     sell_offer_id : String )  -> Result<Response, ContractError> {
 
@@ -430,6 +438,10 @@ pub fn direct_buy(deps: DepsMut,
 
     let _key = (so.owner.clone(), so.token_id.clone());
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
+
+     // remove the sell offer from collection index
+     remove_sell_offer_from_index(deps.branch(), so.collection_info);
+
 
      // trigger transfer the locked NFT in contract to direct buyer
     let cmsg = trigger_send_nft_from_contract(_env, so.token_id, info.sender.to_string(), so.contract_addr)?;

@@ -61,7 +61,7 @@ pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
 
 
 #[allow(dead_code)]
-pub (crate) fn remove_sell_offer(deps: DepsMut, collection_info :
+pub (crate) fn remove_sell_offer_from_index(deps: DepsMut, collection_info :
     Option<SimpleCollectionInfo>)   {
     
     if collection_info.is_some() {
