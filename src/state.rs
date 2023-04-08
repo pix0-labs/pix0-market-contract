@@ -43,6 +43,8 @@ pub struct CollectionIndex {
 
     pub collection_info : SimpleCollectionInfo,
 
+    pub id : String, 
+
     pub number_of_sell_offers : u32, 
 }
 

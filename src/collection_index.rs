@@ -39,9 +39,12 @@ pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
         let collection_index = collection_exists(&deps.as_ref(),
             collection_info.clone());
 
+        let _key = to_collection_id(collection_info.clone());
+
         let mut new_collection_index = CollectionIndex {
 
-            collection_info : collection_info.clone(),
+            collection_info : collection_info,
+            id : _key.clone(), 
             number_of_sell_offers : 1, 
         };
 
@@ -50,8 +53,7 @@ pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
             new_collection_index.number_of_sell_offers += 1;
         }
 
-        let _key = to_collection_id(collection_info);
-
+       
         //ignore the error
         let _ = COLLECTION_INDEX_STORE.save(deps.storage, _key, &new_collection_index);
 

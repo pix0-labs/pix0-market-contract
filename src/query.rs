@@ -450,6 +450,7 @@ pub fn get_indexed_collections(deps : Deps,
             CollectionIndex { 
                 
                 collection_info : c.collection_info,
+                id : c.id, 
                 number_of_sell_offers : c.number_of_sell_offers,
             }
         )
