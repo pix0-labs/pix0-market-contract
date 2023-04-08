@@ -139,6 +139,16 @@ pub enum QueryMsg {
         limit : Option<u32>,
     },
 
+    GetIndexedCollectons {
+
+        category : Option<String>,
+
+        start : Option<u32>,
+
+        limit : Option<u32>,
+    },
+
+
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
