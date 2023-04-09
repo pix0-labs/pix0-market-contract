@@ -111,7 +111,7 @@ mod tests {
 
         let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
 
-        let contract_addr = mock_env().contract.address;
+        let contract_addr = "cosmoms3contract".to_string(); //mock_env().contract.address;
 
         let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
         let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
@@ -134,7 +134,7 @@ mod tests {
         }
 
     
-        let oid = String::from("OF3AA12063E9E65BDD");
+        let oid = String::from("OF4B8EF5D1B36F1C84");
 
         let o = internal_get_sell_offer_by_id(deps.as_ref(), oid.clone());
 
