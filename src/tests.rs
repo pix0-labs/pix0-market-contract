@@ -70,7 +70,7 @@ mod tests {
                     collection_name : format!("XYZ-{} Collection", x),
                     collection_symbol :  format!("XYZ{}", x),
                     owner :Addr::unchecked("Alice"),
-                    category : None, 
+                    category : Some(format!("Category_{}",x )), 
                 }),
                 contract_addr : contract_addr.clone(),
                 offer_id : oid, 
@@ -143,10 +143,11 @@ mod tests {
 
         // get all collection indexes 
 
+        let cat = Some("Category_3".to_string());
         let res = get_collection_indexes(deps.as_ref(), 
-        None, None, None);
+        cat.clone(), None, None);
 
-        println!();
+        println!("\nCollections by category :{:?}", cat);
 
         if res.is_ok() {
 
