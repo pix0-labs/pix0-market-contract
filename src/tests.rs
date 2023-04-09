@@ -67,8 +67,8 @@ mod tests {
                 token_id : tid, 
                 owner : Addr::unchecked(owner), 
                 collection_info : Some(SimpleCollectionInfo {
-                    collection_name : "XYZ collection".to_string(),
-                    collection_symbol : "XYZ".to_string(),
+                    collection_name : format!("XYZ-{} Collection", x),
+                    collection_symbol :  format!("XYZ{}", x),
                     owner :Addr::unchecked("Alice"),
                     category : None, 
                 }),
