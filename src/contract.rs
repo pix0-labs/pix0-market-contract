@@ -10,7 +10,7 @@ use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer,
 update_buy_offer, cancel_buy_offer, update_sell_offer, cancel_sell_offer, 
 transfer_to_escrow, accept_buy_offer, direct_buy};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow,
-get_buy_offers_by, get_buy_offers_of, get_sell_offers, get_indexed_collections};
+get_buy_offers_by, get_buy_offers_of, get_sell_offers, get_collection_indexes, get_collection_index};
 use pix0_contract_common::msg::InstantiateMsg;
 use pix0_contract_common::funcs::create_contract_info;
 // version info for migration info
@@ -102,8 +102,12 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             sell_offer_id, accepted, start, limit  
         }  => to_binary(&get_buy_offers_by(_deps, sell_offer_id, accepted, start, limit)?),
 
-        QueryMsg::GetIndexedCollectons { category, start, limit }=>
-        to_binary(&get_indexed_collections(_deps, category, start, limit)?),
+        QueryMsg::GetCollectionIndexes { category, start, limit }=>
+        to_binary(&get_collection_indexes(_deps, category, start, limit)?),
+
+        QueryMsg::GetCollectionIndex { id } =>
+        to_binary(&get_collection_index(_deps, id)?),
+
 
     }
 }

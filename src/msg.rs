@@ -139,7 +139,8 @@ pub enum QueryMsg {
         limit : Option<u32>,
     },
 
-    GetIndexedCollectons {
+
+    GetCollectionIndexes {
 
         category : Option<String>,
 
@@ -148,6 +149,10 @@ pub enum QueryMsg {
         limit : Option<u32>,
     },
 
+    GetCollectionIndex {
+
+        id : String,
+    },
 
 }
 
@@ -210,7 +215,7 @@ impl BuyOffersWithParamsResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct CollectionIndexesWithParamsResponse {
     
-    pub offers : Vec<CollectionIndex>,
+    pub collection_indexes : Vec<CollectionIndex>,
 
     pub total : Option<u32>,
 
@@ -226,12 +231,19 @@ impl CollectionIndexesWithParamsResponse {
     pub fn empty_response() -> Self {
 
         CollectionIndexesWithParamsResponse {
-            offers: vec![],
+            collection_indexes: vec![],
             total : None,
             start : None,
             limit : None, 
         }
     }
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct CollectionIndexResponse {
+
+    pub collection_index : Option<CollectionIndex>,
 }
 
 

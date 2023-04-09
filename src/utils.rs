@@ -30,6 +30,6 @@ pub fn to_unique_token_id(contract_addr : String, token_id : String )->String{
 pub fn to_collection_id(collection_info : SimpleCollectionInfo) -> String {
 
     format!("{}", hash_to_hex(&(collection_info.owner, collection_info.collection_name,
-    collection_info.collection_symbol)))
+    collection_info.collection_symbol))).to_uppercase()
 
 }

@@ -3,7 +3,7 @@ use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE, COLLECTION_INDEX_STORE
 use crate::state::{SellOffer, BuyOffer, SimpleCollectionInfo, CollectionIndex};
 use crate::error::ContractError;
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse,
-    CollectionIndexesWithParamsResponse};
+    CollectionIndexesWithParamsResponse, CollectionIndexResponse};
 use std::convert::TryInto;
 
 
@@ -434,7 +434,29 @@ fn filter_buy_offer_result_all(offers : Vec<BuyOffer>,
 
 
 
-pub fn get_indexed_collections(deps : Deps,
+pub fn get_collection_index(deps : Deps, id : String ) -> StdResult<CollectionIndexResponse>{
+
+    let loaded_coll = COLLECTION_INDEX_STORE.may_load(deps.storage, id);
+
+
+    match loaded_coll {
+
+        Ok (c) => {
+            if c.is_some() {
+               Ok(CollectionIndexResponse{ collection_index: Some(c.unwrap()) })
+            }
+            else {
+                Ok(CollectionIndexResponse{ collection_index: None  })
+            }
+        },
+
+        Err(_)=> Ok(CollectionIndexResponse{ collection_index: None  }), 
+    }
+
+}
+
+
+pub fn get_collection_indexes(deps : Deps,
     category : Option<String>,
     start: Option<u32>, limit: Option<u32>) 
     ->StdResult<CollectionIndexesWithParamsResponse> {    
@@ -469,7 +491,7 @@ pub fn get_indexed_collections(deps : Deps,
         category, start, limit);
 
     Ok(CollectionIndexesWithParamsResponse {
-        offers: res.0,
+        collection_indexes: res.0,
         total : Some(res.1.try_into().unwrap_or(0)),
         start : start,
         limit : limit

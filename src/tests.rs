@@ -66,7 +66,12 @@ mod tests {
             let s = SellOffer {
                 token_id : tid, 
                 owner : Addr::unchecked(owner), 
-                collection_info : None,
+                collection_info : Some(SimpleCollectionInfo {
+                    collection_name : "XYZ collection".to_string(),
+                    collection_symbol : "XYZ".to_string(),
+                    owner :Addr::unchecked("Alice"),
+                    category : None, 
+                }),
                 contract_addr : contract_addr.clone(),
                 offer_id : oid, 
                 price : price, 
@@ -134,6 +139,42 @@ mod tests {
         let o = internal_get_sell_offer_by_id(deps.as_ref(), oid.clone());
 
         assert_eq!(oid, o.unwrap().offer_id.unwrap());
+
+
+        // get all collection indexes 
+
+        let res = get_collection_indexes(deps.as_ref(), 
+        None, None, None);
+
+        println!();
+
+        if res.is_ok() {
+
+            let res = res.unwrap();
+            for (i , c) in 
+            res.collection_indexes.iter().enumerate() {
+
+                println!("{} : {:?}", i, c);
+
+                let res2 = get_collection_index(deps.as_ref(), 
+                c.id.clone());
+
+                if res2.is_ok() {
+
+                    let res2 = res2.unwrap();
+                    if res2.collection_index.is_some() {
+
+                        let id = res2.collection_index.unwrap().id;
+                        assert_eq!(c.id, id);
+                        println!("Id::{}", id);
+                    }
+
+                }
+            }
+        }
+
+        
+
         
     }
 
