@@ -326,7 +326,7 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
         let royalties = collection_info.unwrap().royalties.unwrap();
         
 
-        let mut total_royalty_percentage : u8= 0;
+        let mut total_royalty_percentage : u16 = 0;
 
         let mut bmsgs : Vec<BankMsg> = vec![];
 
@@ -337,7 +337,7 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
 
             let pr = Uint128::from(r.percentage);
            
-            let amount = Coin { amount : (pr * price.amount) / Uint128::from(100u8), 
+            let amount = Coin { amount : (pr * price.amount) / Uint128::from(10000u16), 
                 denom : price.denom.clone()};
 
             bmsgs.push( BankMsg::Send {
@@ -351,8 +351,8 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
 
         }
 
-        let remaining_percentage = 100 - total_royalty_percentage;
-        let amount = Coin {amount : (Uint128::from(remaining_percentage) * price.amount) /  Uint128::from(100u8),
+        let remaining_percentage = 10000 - total_royalty_percentage;
+        let amount = Coin {amount : (Uint128::from(remaining_percentage) * price.amount) /  Uint128::from(10000u16),
             denom : price.denom} ;
 
         Response::new().add_message(BankMsg::Send {

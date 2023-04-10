@@ -376,11 +376,11 @@ mod tests {
                 royalties : Some(vec![Royalty {
                     name : None,
                     wallet : Addr::unchecked("Sarah"),
-                    percentage : 5,
+                    percentage : 500, // 5%
                 },Royalty {
                     name : None,
                     wallet : Addr::unchecked("John"),
-                    percentage : 2,
+                    percentage : 255, // 2.55%
                 }]), 
         }));
 
