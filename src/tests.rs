@@ -343,11 +343,11 @@ mod tests {
       }
 
 
-       // cargo test test_accept_buy_offer -- --show-output
+    // cargo test test_accept_buy_offer -- --show-output
     #[test]
     fn test_accept_buy_offer(){
 
-        println!("Test.create.sell.offers!");
+        println!("Test.accept.buy.offer!");
 
         let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
 
@@ -389,8 +389,74 @@ mod tests {
         let _res = accept_buy_offer(deps.as_mut(), mock_env(), 
         info, Addr::unchecked("Alice"), oid.unwrap());
 
-        println!("Buy offer accepted.result : {:?}", _res);
+        println!("Buy offer accepted.result. messages :");
+        if _res.is_ok() {
 
+            for (i,m) in _res.ok().unwrap().messages.iter().enumerate() {
+
+                println!("{}: {:?}", i+1, m);
+            }
+        }
+
+
+    }
+
+
+    // cargo test test_direct_buy -- --show-output
+    #[test]
+    fn test_direct_buy(){
+
+        println!("Test.direct.buy!");
+
+        let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
+
+        let contract_addr = "cosmos3contract".to_string(); //mock_env().contract.address;
+
+        let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
+        let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
+
+        inst(deps.as_mut(), info.clone(), owner);
+
+        let tid = String::from("Tok_009x");
+        let oid = Some(String::from("Oid_009x"));
+
+        let price : Coin = Coin {
+            amount : Uint128::from(3500u64 ),
+            denom : DEFAULT_PRICE_DENOM.to_string(), 
+        };
+
+        let _res = create_so(deps.as_mut(), 
+            info.clone(), owner, tid, 
+            oid.clone(), price.clone(), contract_addr, Some(SimpleCollectionInfo {
+                collection_name : format!("XYZ-{} Collection", 1),
+                collection_symbol :  format!("XYZ{}", 1),
+                owner :Addr::unchecked("Alice"),
+                category : Some(format!("Category_{}",1 )), 
+                royalties : Some(vec![Royalty {
+                    name : None,
+                    wallet : Addr::unchecked("Sarah"),
+                    percentage : 500, // 5%
+                },Royalty {
+                    name : None,
+                    wallet : Addr::unchecked("John"),
+                    percentage : 255, // 2.55%
+                }]), 
+        }));
+
+        println!("Price :{:?}", price);
+
+        let _res = loop_create_buy_offers(deps.as_mut(),info.clone(), oid.clone().unwrap());
+
+        let _res = direct_buy(deps.as_mut(), mock_env(), info, oid.unwrap());
+
+        println!("Direct.buy.result. messages :");
+        if _res.is_ok() {
+
+            for (i,m) in _res.ok().unwrap().messages.iter().enumerate() {
+
+                println!("{}: {:?}", i+1, m);
+            }
+        }
     }
 
 }

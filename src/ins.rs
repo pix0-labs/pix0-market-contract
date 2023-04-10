@@ -316,7 +316,7 @@ fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -
 }
 
 #[allow(dead_code)]
-fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response {
+fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer, action : &str ) -> Response {
 
     let collection_info = sell_offer.collection_info;
     let cinfo = collection_info.clone();
@@ -359,7 +359,7 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
             to_address: sell_offer.owner.clone().into(),
             amount: vec![amount],
         })
-        .add_attribute("action", "accept-buy-offer")
+        .add_attribute("action", action)
         .add_attribute("to", sell_offer.owner)
         .add_messages(bmsgs)
         .add_attributes(attribs)
@@ -367,7 +367,7 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
     }
     else {
         internal_transfer_from_escrow(sell_offer.owner, price,
-        "accept-buy-offer")
+        action)
 
     }
 
@@ -375,15 +375,13 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
 
 fn accept_bo_and_refund_others(deps : Deps, buy_offer : BuyOffer, sell_offer : SellOffer) -> Response {
 
-    let res = pay_so_owner_and_royalties(buy_offer.price.clone(), sell_offer.clone());
+    let res = pay_so_owner_and_royalties(buy_offer.price.clone(), sell_offer.clone(), "accept-buy-offer");
     
     let mesgs = refund_buy_offers(deps,  sell_offer.offer_id.unwrap(), Some(buy_offer));
 
     res.clone()
     .add_messages( mesgs.0)
-    .add_attributes(mesgs.1);
-
-    res 
+    .add_attributes(mesgs.1)
 }
 
 fn refund_all_buy_offers(deps : Deps,  sell_offer_id : String) -> Response{
@@ -481,15 +479,13 @@ pub fn accept_buy_offer(mut deps: DepsMut,
 
 fn direct_buy_and_refund_others(deps : Deps, price :Coin , sell_offer : SellOffer) -> Response {
 
-    let res = pay_so_owner_and_royalties(price, sell_offer.clone());
+    let res = pay_so_owner_and_royalties(price, sell_offer.clone(), "direct-buy");
     
     let mesgs = refund_buy_offers(deps, sell_offer.offer_id.unwrap(), None);
 
     res.clone()
     .add_messages( mesgs.0)
-    .add_attributes(mesgs.1);
-
-    res 
+    .add_attributes(mesgs.1)
 }
 
 pub fn direct_buy(mut deps: DepsMut, 
