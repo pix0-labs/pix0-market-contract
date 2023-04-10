@@ -315,12 +315,67 @@ fn internal_transfer_from_escrow(recipient : Addr, coin : Coin, action : &str) -
     send_tokens(recipient, vec![coin],action)
 }
 
-fn accept_bo_and_refund_others(deps : Deps, so_owner : Addr, buy_offer : BuyOffer, sell_offer_id : String) -> Response {
+#[allow(dead_code)]
+fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response {
 
-    let res = internal_transfer_from_escrow(so_owner, buy_offer.price.clone(),
-        "accept-buy-offer");
+    let collection_info = sell_offer.collection_info;
+    let cinfo = collection_info.clone();
+
+    if cinfo.is_some() && cinfo.unwrap().royalties.is_some(){
+
+        let royalties = collection_info.unwrap().royalties.unwrap();
+        
+
+        let mut total_royalty_percentage : u8= 0;
+
+        let mut bmsgs : Vec<BankMsg> = vec![];
+
+        let mut attribs : Vec<Attribute> = vec![];
+
+
+        for r in royalties {
+
+            let amount = Coin { amount : (Uint128::from(r.percentage)/Uint128::from(100u8)) * price.amount, 
+                denom : price.denom.clone()};
+
+            bmsgs.push( BankMsg::Send {
+                    to_address: r.wallet.clone().into(),
+                    amount: vec![amount],
+            });
+
+            attribs.push (Attribute{ key : String::from("to"), value : r.wallet.to_string()});
+
+            total_royalty_percentage += r.percentage ;
+
+        }
+
+        let remaining_percentage = 100 - total_royalty_percentage;
+        let amount = Coin {amount : (Uint128::from(remaining_percentage)/Uint128::from(100u8)) * price.amount,
+            denom : price.denom} ;
+
+        Response::new().add_message(BankMsg::Send {
+            to_address: sell_offer.owner.clone().into(),
+            amount: vec![amount],
+        })
+        .add_attribute("action", "accept-buy-offer")
+        .add_attribute("to", sell_offer.owner)
+        .add_messages(bmsgs)
+        .add_attributes(attribs)
+        
+    }
+    else {
+        internal_transfer_from_escrow(sell_offer.owner, price,
+        "accept-buy-offer")
+
+    }
+
+}
+
+fn accept_bo_and_refund_others(deps : Deps, buy_offer : BuyOffer, sell_offer : SellOffer) -> Response {
+
+    let res = pay_so_owner_and_royalties(buy_offer.price.clone(), sell_offer.clone());
     
-    let mesgs = refund_buy_offers(deps,  sell_offer_id, Some(buy_offer));
+    let mesgs = refund_buy_offers(deps,  sell_offer.offer_id.unwrap(), Some(buy_offer));
 
     res.clone()
     .add_messages( mesgs.0)
@@ -412,12 +467,12 @@ pub fn accept_buy_offer(mut deps: DepsMut,
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
     // remove the sell offer from collection index
-    remove_sell_offer_from_index(deps.branch(), so.collection_info);
+    remove_sell_offer_from_index(deps.branch(), so.collection_info.clone());
 
     // trigger transfer the locked NFT in contract to buyer
-    let cmsg = trigger_send_nft_from_contract(_env, so.token_id, bo.owner.clone().to_string(), so.contract_addr)?;
+    let cmsg = trigger_send_nft_from_contract(_env, so.token_id.clone(), bo.owner.clone().to_string(), so.contract_addr.clone())?;
 
-    Ok(accept_bo_and_refund_others(deps.as_ref(), so.owner, bo, sell_offer_id)
+    Ok(accept_bo_and_refund_others(deps.as_ref(),bo, so)
     .add_message(cmsg))
 } 
 
