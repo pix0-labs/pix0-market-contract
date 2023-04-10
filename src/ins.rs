@@ -477,6 +477,21 @@ pub fn accept_buy_offer(mut deps: DepsMut,
 } 
 
 
+
+
+fn direct_buy_and_refund_others(deps : Deps, price :Coin , sell_offer : SellOffer) -> Response {
+
+    let res = pay_so_owner_and_royalties(price, sell_offer.clone());
+    
+    let mesgs = refund_buy_offers(deps, sell_offer.offer_id.unwrap(), None);
+
+    res.clone()
+    .add_messages( mesgs.0)
+    .add_attributes(mesgs.1);
+
+    res 
+}
+
 pub fn direct_buy(mut deps: DepsMut, 
     _env : Env, info: MessageInfo, 
     sell_offer_id : String )  -> Result<Response, ContractError> {
@@ -495,17 +510,14 @@ pub fn direct_buy(mut deps: DepsMut,
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
      // remove the sell offer from collection index
-     remove_sell_offer_from_index(deps.branch(), so.collection_info);
+     remove_sell_offer_from_index(deps.branch(), so.collection_info.clone());
 
 
      // trigger transfer the locked NFT in contract to direct buyer
-    let cmsg = trigger_send_nft_from_contract(_env, so.token_id, info.sender.to_string(), so.contract_addr)?;
+    let cmsg = trigger_send_nft_from_contract(_env, so.token_id.clone(), 
+    info.sender.to_string(), so.contract_addr.clone())?;
 
-    Ok(refund_all_buy_offers(deps.as_ref(), sell_offer_id).add_message(
-        BankMsg::Send {
-            to_address: so.owner.to_string(),
-            amount : vec![price],
-        }
-    ).add_message(cmsg))
+    Ok(direct_buy_and_refund_others(deps.as_ref(), price, so).add_message(cmsg))
+    
 } 
  
