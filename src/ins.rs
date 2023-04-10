@@ -375,11 +375,10 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer, action : &s
 
 fn accept_bo_and_refund_others(deps : Deps, buy_offer : BuyOffer, sell_offer : SellOffer) -> Response {
 
-    let res = pay_so_owner_and_royalties(buy_offer.price.clone(), sell_offer.clone(), "accept-buy-offer");
-    
-    let mesgs = refund_buy_offers(deps,  sell_offer.offer_id.unwrap(), Some(buy_offer));
+    let mesgs = refund_buy_offers(deps,  sell_offer.offer_id.clone().unwrap(),
+     Some(buy_offer.clone()));
 
-    res
+    pay_so_owner_and_royalties(buy_offer.price, sell_offer, "accept-buy-offer")
     .add_messages( mesgs.0)
     .add_attributes(mesgs.1)
 }
@@ -479,11 +478,9 @@ pub fn accept_buy_offer(mut deps: DepsMut,
 
 fn direct_buy_and_refund_others(deps : Deps, price :Coin , sell_offer : SellOffer) -> Response {
 
-    let res = pay_so_owner_and_royalties(price, sell_offer.clone(), "direct-buy");
-    
-    let mesgs = refund_buy_offers(deps, sell_offer.offer_id.unwrap(), None);
+    let mesgs = refund_buy_offers(deps, sell_offer.offer_id.clone().unwrap(), None);
 
-    res
+    pay_so_owner_and_royalties(price, sell_offer, "direct-buy")
     .add_messages( mesgs.0)
     .add_attributes(mesgs.1)
 }
