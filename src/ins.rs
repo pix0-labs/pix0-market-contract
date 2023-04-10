@@ -443,8 +443,6 @@ pub fn accept_buy_offer(mut deps: DepsMut,
     buy_offer_by : Addr, 
     sell_offer_id : String )  -> Result<Response, ContractError> {
     
-    let owner = info.sender;
-
     let mut bo = get_buy_offer_checked(deps.as_ref(), buy_offer_by.clone(), 
     sell_offer_id.clone())?;
 
@@ -453,7 +451,7 @@ pub fn accept_buy_offer(mut deps: DepsMut,
 
     let mut so = internal_get_sell_offer_by_id(deps.as_ref(), sell_offer_id.clone())?;
     
-    assert_eq!(owner, so.owner);
+    assert_eq!(info.sender, so.owner);
 
     let _key = (sell_offer_id.clone(), buy_offer_by);
 
@@ -518,6 +516,6 @@ pub fn direct_buy(mut deps: DepsMut,
     info.sender.to_string(), so.contract_addr.clone())?;
 
     Ok(direct_buy_and_refund_others(deps.as_ref(), price, so).add_message(cmsg))
-    
+
 } 
  

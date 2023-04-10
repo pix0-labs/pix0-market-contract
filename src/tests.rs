@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
   
-    use crate::state::*;
+    use crate::{state::*, ContractError};
     use cosmwasm_std::testing::{mock_env, mock_info, mock_dependencies_with_balance};
-    use cosmwasm_std::{coins, Addr,  Coin, Uint128, DepsMut, MessageInfo };
+    use cosmwasm_std::{coins, Addr,  Coin, Uint128, DepsMut, MessageInfo, Response };
     use crate::msg::*;
     use crate::contract::*;
     use pix0_contract_common::msg::InstantiateMsg;
@@ -45,8 +45,36 @@ mod tests {
 
     }
 
+
+    fn create_so (mut deps : DepsMut, info: MessageInfo, owner : &str, token_id : String,
+    offer_id : Option<String>, price : Coin, contract_addr : String, collection_info : Option<SimpleCollectionInfo>  )
+    -> Result<Response, ContractError> {
+
+      
+        let s = SellOffer {
+            token_id : token_id, 
+            owner : Addr::unchecked(owner), 
+            collection_info : collection_info,
+            contract_addr : contract_addr.clone(),
+            offer_id : offer_id, 
+            price : price, 
+            status : 0 ,
+            allowed_direct_buy : true, 
+            deal_close_type : None,
+            date_created : None,
+            date_updated : None, 
+        };
+
+        let create_so = ExecuteMsg::CreateSellOffer {
+            offer : s.clone()
+        };
+
+        execute(deps.branch(), mock_env(), info.clone(), 
+         create_so.clone())
+    }
+
     fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, 
-    contract_addr : String, running_offer_id : bool, status : u8 ) {
+    contract_addr : String, running_offer_id : bool) {
 
         for x in 0..(max+1) {
      
@@ -63,36 +91,20 @@ mod tests {
                 denom : DEFAULT_PRICE_DENOM.to_string(), 
             };
 
-            let s = SellOffer {
-                token_id : tid, 
-                owner : Addr::unchecked(owner), 
-                collection_info : Some(SimpleCollectionInfo {
+            
+             let _res = create_so(deps.branch(), 
+                info.clone(), owner, tid.clone(), 
+                oid, price, contract_addr.clone(), Some(SimpleCollectionInfo {
                     collection_name : format!("XYZ-{} Collection", x),
                     collection_symbol :  format!("XYZ{}", x),
                     owner :Addr::unchecked("Alice"),
                     category : Some(format!("Category_{}",x )), 
                     royalties : None, 
-                }),
-                contract_addr : contract_addr.clone(),
-                offer_id : oid, 
-                price : price, 
-                status : status ,
-                allowed_direct_buy : true, 
-                deal_close_type : None,
-                date_created : None,
-                date_updated : None, 
-            };
+                }));
 
-            let create_so = ExecuteMsg::CreateSellOffer {
-                offer : s.clone()
-            };
-  
-             let _res = execute(deps.branch(), mock_env(), info.clone(), 
-             create_so.clone());
-  
              if _res.is_err() {
   
-                 println!("Error.creating so:{}, error:is::{:?}", s.token_id, _res);
+                 println!("Error.creating so:{}, error:is::{:?}", tid , _res);
              }
              /*
              else {
@@ -119,7 +131,7 @@ mod tests {
 
         inst(deps.as_mut(), info.clone(), owner);
        
-        loop_create_so(deps.as_mut(), info.clone(),10, owner, contract_addr.clone().to_string(), false, 2 );
+        loop_create_so(deps.as_mut(), info.clone(),10, owner, contract_addr.clone().to_string(), false );
 
         let res = cancel_sell_offer(deps.as_mut(), mock_env(),  info.clone(), 
         String::from("Tk_005"), contract_addr.to_string());
@@ -201,7 +213,7 @@ mod tests {
         }
         else {
 
-            println!("Buy offer.created:::{:?}\n\n", _res);
+            println!("Buy offer.created:::\n{:?}\n\n", _res);
         }
         /* 
         let create_bo = ExecuteMsg::CreateBuyOffer {
@@ -248,7 +260,7 @@ mod tests {
         inst(deps.as_mut(), info.clone(), owner);
         
         loop_create_so(deps.as_mut(), info.clone(),3, owner, mock_env().contract.address.to_string(), 
-        true, 0 );
+        true);
 
         let res = get_sell_offers_of(deps.as_ref(), 
         Addr::unchecked(owner), 
@@ -329,5 +341,48 @@ mod tests {
 
         
       }
+
+
+       // cargo test test_accept_buy_offer -- --show-output
+    #[test]
+    fn test_accept_buy_offer(){
+
+        println!("Test.create.sell.offers!");
+
+        let owner : &str = "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky";
+
+        let contract_addr = "cosmos3contract".to_string(); //mock_env().contract.address;
+
+        let mut deps = mock_dependencies_with_balance(&coins(2, DEFAULT_PRICE_DENOM));
+        let info = mock_info(owner, &coins(134000, DEFAULT_PRICE_DENOM));
+
+        inst(deps.as_mut(), info.clone(), owner);
+
+        let tid = String::from("Tok_009x");
+        let oid = Some(String::from("Oid_009x"));
+
+        let price : Coin = Coin {
+            amount : Uint128::from(3500u64 ),
+            denom : DEFAULT_PRICE_DENOM.to_string(), 
+        };
+
+        let _res = create_so(deps.as_mut(), 
+            info.clone(), owner, tid, 
+            oid.clone(), price, contract_addr, Some(SimpleCollectionInfo {
+                collection_name : format!("XYZ-{} Collection", 1),
+                collection_symbol :  format!("XYZ{}", 1),
+                owner :Addr::unchecked("Alice"),
+                category : Some(format!("Category_{}",1 )), 
+                royalties : None, 
+        }));
+
+        let _res = loop_create_buy_offers(deps.as_mut(),info.clone(), oid.clone().unwrap());
+
+        let _res = accept_buy_offer(deps.as_mut(), mock_env(), 
+        info, Addr::unchecked("Alice"), oid.unwrap());
+
+        println!("Buy offer accepted.result : {:?}", _res);
+
+    }
 
 }
