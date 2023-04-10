@@ -379,7 +379,7 @@ fn accept_bo_and_refund_others(deps : Deps, buy_offer : BuyOffer, sell_offer : S
     
     let mesgs = refund_buy_offers(deps,  sell_offer.offer_id.unwrap(), Some(buy_offer));
 
-    res.clone()
+    res
     .add_messages( mesgs.0)
     .add_attributes(mesgs.1)
 }
@@ -483,7 +483,7 @@ fn direct_buy_and_refund_others(deps : Deps, price :Coin , sell_offer : SellOffe
     
     let mesgs = refund_buy_offers(deps, sell_offer.offer_id.unwrap(), None);
 
-    res.clone()
+    res
     .add_messages( mesgs.0)
     .add_attributes(mesgs.1)
 }
