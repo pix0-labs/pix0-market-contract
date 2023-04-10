@@ -11,7 +11,7 @@ mod tests {
    // use crate::ins::*;
     use crate::query::*;
     use crate::ins::*;
-
+    use pix0_market_handlers::state::SimpleCollectionInfo;
 
     const DEFAULT_PRICE_DENOM : &str = "uconst";
 
@@ -71,6 +71,7 @@ mod tests {
                     collection_symbol :  format!("XYZ{}", x),
                     owner :Addr::unchecked("Alice"),
                     category : Some(format!("Category_{}",x )), 
+                    royalties : None, 
                 }),
                 contract_addr : contract_addr.clone(),
                 offer_id : oid, 

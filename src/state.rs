@@ -2,6 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use cosmwasm_std::{Addr, Coin, Timestamp};
 use crate::utils::offer_id;
+use pix0_market_handlers::state::SimpleCollectionInfo;
 
 pub const SELL_STATUS_NEW : u8 = 1;
 
@@ -11,31 +12,6 @@ pub const DEAL_CLOSED_OFFER_ACCEPTED : u8 = 1;
 
 pub const DEAL_CLOSED_AT_DIRECT_BUY : u8 = 2;
 
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct SimpleCollectionInfo {
-
-    pub owner : Addr,
-
-    pub collection_name : String,
-
-    pub collection_symbol : String, 
-
-    pub category : Option<String>,
-}
-
-impl SimpleCollectionInfo {
-
-    pub fn default () -> Self {
-
-        SimpleCollectionInfo {
-            owner : Addr::unchecked(""),
-            collection_name : String::from(""),
-            collection_symbol : String::from(""),
-            category : Some(String::from("")), 
-        }
-    } 
-}
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

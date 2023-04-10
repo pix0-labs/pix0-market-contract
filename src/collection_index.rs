@@ -1,6 +1,7 @@
 use cosmwasm_std::{Deps, DepsMut};
 use crate::indexes::COLLECTION_INDEX_STORE;
-use crate::state::{SimpleCollectionInfo, CollectionIndex};
+use crate::state::CollectionIndex;
+use pix0_market_handlers::state::SimpleCollectionInfo;
 use crate::utils::to_collection_id;
 
 #[allow(dead_code)]
