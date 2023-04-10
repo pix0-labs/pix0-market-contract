@@ -335,7 +335,9 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
 
         for r in royalties {
 
-            let amount = Coin { amount : (Uint128::from(r.percentage)/Uint128::from(100u8)) * price.amount, 
+            let pr = Uint128::from(r.percentage);
+           
+            let amount = Coin { amount : (pr * price.amount) / Uint128::from(100u8), 
                 denom : price.denom.clone()};
 
             bmsgs.push( BankMsg::Send {
@@ -350,7 +352,7 @@ fn pay_so_owner_and_royalties (price : Coin, sell_offer : SellOffer) -> Response
         }
 
         let remaining_percentage = 100 - total_royalty_percentage;
-        let amount = Coin {amount : (Uint128::from(remaining_percentage)/Uint128::from(100u8)) * price.amount,
+        let amount = Coin {amount : (Uint128::from(remaining_percentage) * price.amount) /  Uint128::from(100u8),
             denom : price.denom} ;
 
         Response::new().add_message(BankMsg::Send {

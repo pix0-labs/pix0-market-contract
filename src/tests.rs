@@ -11,7 +11,7 @@ mod tests {
    // use crate::ins::*;
     use crate::query::*;
     use crate::ins::*;
-    use pix0_market_handlers::state::SimpleCollectionInfo;
+    use pix0_market_handlers::state::{SimpleCollectionInfo, Royalty};
 
     const DEFAULT_PRICE_DENOM : &str = "uconst";
 
@@ -205,7 +205,7 @@ mod tests {
             date_updated : None, 
         };
 
-        let _res = internal_create_buy_offer(deps, mock_env(), info, Addr::unchecked(owner),b, sell_offer_id.clone());
+        let _res = internal_create_buy_offer(deps, mock_env(), info, Addr::unchecked(owner),b.clone(), sell_offer_id.clone());
 
         if _res.is_err() {
 
@@ -213,7 +213,7 @@ mod tests {
         }
         else {
 
-            println!("Buy offer.created:::\n{:?}\n\n", _res);
+            println!("Buy offer.created by:::\n{:?}:Price:{:?}\n\n", b.owner, b.price);
         }
         /* 
         let create_bo = ExecuteMsg::CreateBuyOffer {
@@ -368,12 +368,20 @@ mod tests {
 
         let _res = create_so(deps.as_mut(), 
             info.clone(), owner, tid, 
-            oid.clone(), price, contract_addr, Some(SimpleCollectionInfo {
+            oid.clone(), price.clone(), contract_addr, Some(SimpleCollectionInfo {
                 collection_name : format!("XYZ-{} Collection", 1),
                 collection_symbol :  format!("XYZ{}", 1),
                 owner :Addr::unchecked("Alice"),
                 category : Some(format!("Category_{}",1 )), 
-                royalties : None, 
+                royalties : Some(vec![Royalty {
+                    name : None,
+                    wallet : Addr::unchecked("Sarah"),
+                    percentage : 5,
+                },Royalty {
+                    name : None,
+                    wallet : Addr::unchecked("John"),
+                    percentage : 2,
+                }]), 
         }));
 
         let _res = loop_create_buy_offers(deps.as_mut(),info.clone(), oid.clone().unwrap());
