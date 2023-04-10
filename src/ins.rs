@@ -456,12 +456,12 @@ pub fn accept_buy_offer(mut deps: DepsMut,
     let _key = (sell_offer_id.clone(), buy_offer_by);
 
     BUY_OFFERS_STORE.save(deps.storage, _key.clone(), &bo)?;
-
+    
     so.status = SELL_STATUS_CLOSED;
     so.deal_close_type = Some(DEAL_CLOSED_OFFER_ACCEPTED);
     so.date_updated = Some(_env.block.time);
 
-    let _key = (so.owner.clone(), so.token_id.clone());
+    let _key = (so.owner.clone(),to_unique_token_id(so.contract_addr.clone(), so.token_id.clone()));
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
     // remove the sell offer from collection index
@@ -504,7 +504,7 @@ pub fn direct_buy(mut deps: DepsMut,
     so.deal_close_type = Some(DEAL_CLOSED_AT_DIRECT_BUY);
     so.date_updated = Some(_env.block.time);
 
-    let _key = (so.owner.clone(), so.token_id.clone());
+    let _key = (so.owner.clone(),to_unique_token_id(so.contract_addr.clone(), so.token_id.clone()));
     sell_offers_store().save(deps.storage, _key.clone(), &so)?;
 
      // remove the sell offer from collection index
