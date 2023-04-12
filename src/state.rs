@@ -22,6 +22,8 @@ pub struct CollectionIndex {
     pub id : String, 
 
     pub number_of_sell_offers : u32, 
+
+    pub date_created : Option<Timestamp>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

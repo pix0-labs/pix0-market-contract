@@ -1,4 +1,4 @@
-use cosmwasm_std::{Deps, DepsMut};
+use cosmwasm_std::{Deps, DepsMut, Timestamp};
 use crate::indexes::COLLECTION_INDEX_STORE;
 use crate::state::CollectionIndex;
 use pix0_market_handlers::state::SimpleCollectionInfo;
@@ -31,7 +31,7 @@ SimpleCollectionInfo) -> Option<CollectionIndex> {
 
 #[allow(dead_code)]
 pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
-    Option<SimpleCollectionInfo>)   {
+    Option<SimpleCollectionInfo>, date_created : Option<Timestamp>)   {
     
     if collection_info.is_some() {
 
@@ -47,6 +47,7 @@ pub (crate) fn save_collection_index(deps: DepsMut, collection_info :
             collection_info : collection_info,
             id : _key.clone(), 
             number_of_sell_offers : 1, 
+            date_created : date_created, 
         };
 
         if collection_index.is_some() {

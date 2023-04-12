@@ -112,6 +112,9 @@ mod tests {
                 println!("{}.Created.so:{:?}", x, _res);
              } */
 
+             //println!("Pausing for 1 sec::{}::current.time::{}", x, mock_env().block.time);
+             //std::thread::sleep(std::time::Duration::from_secs(1));
+
         }
 
     }
@@ -158,7 +161,7 @@ mod tests {
 
         let cat = Some("Category_3".to_string());
         let res = get_collection_indexes(deps.as_ref(), 
-        cat.clone(), None, None);
+        None, None, None);
 
         println!("\nCollections by category :{:?}", cat);
 

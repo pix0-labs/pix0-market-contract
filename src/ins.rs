@@ -68,7 +68,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
 
     sell_offers_store().save(deps.storage, _key, &new_offer)?;
 
-    save_collection_index(deps, offer.collection_info);
+    save_collection_index(deps, offer.collection_info,Some(date_created));
 
     // transfer NFT from the seller to the contract
     let cmsg = trigger_send_nft_to_contract(info, offer.token_id, offer.contract_addr)?;

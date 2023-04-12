@@ -51,7 +51,10 @@ pub fn get_sell_offers(deps : Deps,
     
     }
 
-    let offers = offers.unwrap();
+    let mut offers = offers.unwrap();
+
+    offers.sort_by(|a, b| b.date_created.cmp(&a.date_created));
+    
 
     let res : (Vec<SellOffer>,usize) = filter_sell_offer_result(offers, status, collection_info, start, limit);
 
@@ -475,6 +478,7 @@ pub fn get_collection_indexes(deps : Deps,
                 collection_info : c.collection_info,
                 id : c.id, 
                 number_of_sell_offers : c.number_of_sell_offers,
+                date_created : c.date_created, 
             }
         )
     }).collect();
@@ -486,7 +490,12 @@ pub fn get_collection_indexes(deps : Deps,
     
     }
 
-    let collection_indexes = offers.unwrap();
+    let mut collection_indexes = 
+    offers.unwrap();
+    
+    collection_indexes
+    .sort_by(|a, b| b.date_created.cmp(&a.date_created));
+    
 
     let res : (Vec<CollectionIndex>,usize) = filter_collection_index_result(collection_indexes, 
         category, start, limit);
