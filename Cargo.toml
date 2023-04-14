@@ -1,6 +1,6 @@
 [package]
 name = "pix0-market-contract"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["Christopher Chee <ketyung@techchee.com>"]
 edition = "2018"
 

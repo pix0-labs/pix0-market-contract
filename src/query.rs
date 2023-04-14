@@ -462,6 +462,7 @@ pub fn get_collection_index(deps : Deps, id : String ) -> StdResult<CollectionIn
 
 pub fn get_collection_indexes(deps : Deps,
     category : Option<String>,
+    min_num_of_sell_offers : Option<u32>, 
     start: Option<u32>, limit: Option<u32>) 
     ->StdResult<CollectionIndexesWithParamsResponse> {    
    
@@ -498,7 +499,7 @@ pub fn get_collection_indexes(deps : Deps,
     
 
     let res : (Vec<CollectionIndex>,usize) = filter_collection_index_result(collection_indexes, 
-        category, start, limit);
+        category, min_num_of_sell_offers, start, limit);
 
     Ok(CollectionIndexesWithParamsResponse {
         collection_indexes: res.0,
@@ -512,6 +513,7 @@ pub fn get_collection_indexes(deps : Deps,
 
 fn filter_collection_index_result(collection_indexes : Vec<CollectionIndex>, 
     category : Option<String>,
+    min_num_of_sell_offers : Option<u32>, 
     start : Option<u32>,
     limit: Option<u32>) -> (Vec<CollectionIndex>,usize){
 
@@ -519,7 +521,7 @@ fn filter_collection_index_result(collection_indexes : Vec<CollectionIndex>,
 
     let skip = start.unwrap_or(0) as usize ;
     
-    let res = filter_collection_index_result_all(collection_indexes, category);
+    let res = filter_collection_index_result_all(collection_indexes, category, min_num_of_sell_offers);
 
     (res.clone()
     .into_iter()
@@ -543,9 +545,19 @@ fn compare_category (collection_index : &CollectionIndex, category : String ) ->
  
 
 fn filter_collection_index_result_all(collection_indexes : Vec<CollectionIndex> ,
-    category : Option<String>) -> Vec<CollectionIndex>{
+    category : Option<String>,  min_num_of_sell_offers : Option<u32>) -> Vec<CollectionIndex>{
    
-    if  category.is_some() {
+
+    if  category.is_some() && min_num_of_sell_offers.is_some() {
+
+        collection_indexes.into_iter().filter(|c|
+            compare_category(c, category.clone().unwrap())
+            && c.number_of_sell_offers >= min_num_of_sell_offers.unwrap() 
+            )
+        .collect::<Vec<CollectionIndex>>()
+    }
+    else
+    if  category.is_some() && min_num_of_sell_offers.is_none() {
 
         collection_indexes.into_iter().filter(|c|
             compare_category(c, category.clone().unwrap()) 

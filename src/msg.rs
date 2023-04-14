@@ -145,6 +145,8 @@ pub enum QueryMsg {
 
         category : Option<String>,
 
+        min_num_of_sell_offers : Option<u32>, 
+
         start : Option<u32>,
 
         limit : Option<u32>,

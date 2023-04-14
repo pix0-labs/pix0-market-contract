@@ -102,8 +102,8 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             sell_offer_id, accepted, start, limit  
         }  => to_binary(&get_buy_offers_by(_deps, sell_offer_id, accepted, start, limit)?),
 
-        QueryMsg::GetCollectionIndexes { category, start, limit }=>
-        to_binary(&get_collection_indexes(_deps, category, start, limit)?),
+        QueryMsg::GetCollectionIndexes { category, min_num_of_sell_offers, start, limit }=>
+        to_binary(&get_collection_indexes(_deps, category, min_num_of_sell_offers, start, limit)?),
 
         QueryMsg::GetCollectionIndex { id } =>
         to_binary(&get_collection_index(_deps, id)?),
