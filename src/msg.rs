@@ -157,6 +157,9 @@ pub enum QueryMsg {
         id : String,
     },
 
+
+    GetContractInfo{},
+   
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

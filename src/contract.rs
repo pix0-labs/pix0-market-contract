@@ -12,7 +12,7 @@ transfer_to_escrow, accept_buy_offer, direct_buy};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow,
 get_buy_offers_by, get_buy_offers_of, get_sell_offers, get_collection_indexes, get_collection_index};
 use pix0_contract_common::msg::InstantiateMsg;
-use pix0_contract_common::funcs::create_contract_info;
+use pix0_contract_common::funcs::{create_contract_info, get_contract_info};
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:pix0-market-contract";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -108,6 +108,10 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetCollectionIndex { id } =>
         to_binary(&get_collection_index(_deps, id)?),
 
+        QueryMsg::GetContractInfo {} =>
+        to_binary(&get_contract_info(_deps)?),
+
+      
 
     }
 }
