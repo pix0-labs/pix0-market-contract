@@ -161,7 +161,7 @@ mod tests {
 
         let cat = Some("Category_3".to_string());
         let res = get_collection_indexes(deps.as_ref(), 
-        None, None, None);
+        None, None, None, None);
 
         println!("\nCollections by category :{:?}", cat);
 
