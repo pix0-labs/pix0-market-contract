@@ -32,7 +32,7 @@ pub fn update_contract_info (deps: DepsMut,
 }
 
 
-pub fn create_sell_offer(mut deps: DepsMut, 
+pub fn create_sell_offer(deps: DepsMut, 
 _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractError> {
 
     let owner = info.clone().sender;
@@ -60,8 +60,8 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
         date_updated : Some(date_created),
     };
 
-    let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
-    info.clone(), "CREATE_SELL_OFFER_FEE")?;
+    //let bmsgs = try_paying_contract_treasuries(deps.branch(), _env.clone(), 
+    //info.clone(), "CREATE_SELL_OFFER_FEE")?;
  
 
     let _key = (owner, to_unique_token_id(offer.contract_addr.clone(), offer.token_id.clone()) );
@@ -74,7 +74,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     let cmsg = trigger_send_nft_to_contract(_env, info, offer.token_id, offer.contract_addr)?;
 
     Ok(Response::new()
-    .add_messages(bmsgs)
+    //.add_messages(bmsgs)
     .add_attribute("action", "create-sell-offer")
     .add_message(cmsg))
     
