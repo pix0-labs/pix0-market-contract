@@ -10,6 +10,22 @@
         "project": "pix0-market-contract",
         "type": "instantiate",
         "chainId": "constantine-2",
+        "codeId": 529,
+        "txhash": "2282F985B1273A09A506CF86E390B5AD3B001A839A5418109F4C109D001D4443",
+        "address": "archway1ayzvv9zcx3vedz8d24g5kx5w5s0vff7pjws4ntjgcwln0qhlln9q8606hc",
+        "admin": "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "store",
+        "chainId": "constantine-2",
+        "codeId": 529,
+        "txhash": "651B0E5365401B5DE7C57185A7488F4350C2C375D55843C6444F03DF8F3C0951"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "instantiate",
+        "chainId": "constantine-2",
         "codeId": 522,
         "txhash": "89179DEC11A990B322EFA21EBED60E0D85125BF8414103E691392A60C0925E43",
         "address": "archway1rhmlhr3shrytqnlx4and676gprjm67z7zcc5u278fuyc4zr7cf5srrx8d8",
