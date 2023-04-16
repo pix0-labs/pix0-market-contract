@@ -1,7 +1,8 @@
-use crate::state::{ SellOffer, PurchaseHistory, BuyOffer, CollectionIndex};
+use crate::state::{PurchaseHistory, BuyOffer, CollectionIndex};
 use cosmwasm_std::Addr;
 use cw_storage_plus::{UniqueIndex, Index, IndexList, IndexedMap, Map};
 use crate::utils::to_unique_token_id;
+use pix0_market_handlers::state::SellOffer;
 
 pub const PURCHASE_HISTORY_STORE : Map<(Addr,String), PurchaseHistory> = Map::new("PIX0_PHIST_STORE");
 

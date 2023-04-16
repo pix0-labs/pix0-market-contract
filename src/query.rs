@@ -1,8 +1,8 @@
 use cosmwasm_std::{Deps, StdResult, Order, Addr, Env, Coin };
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE, COLLECTION_INDEX_STORE};
-use crate::state::{SellOffer, BuyOffer, CollectionIndex};
+use crate::state::{BuyOffer, CollectionIndex};
 use crate::error::ContractError;
-use pix0_market_handlers::state::SimpleCollectionInfo;
+use pix0_market_handlers::state::{SimpleCollectionInfo,SellOffer};
 use crate::msg::{SellOffersWithParamsResponse, SellOfferResponse, BalanceResponse, BuyOffersWithParamsResponse,
     CollectionIndexesWithParamsResponse, CollectionIndexResponse};
 use std::convert::TryInto;

@@ -1,6 +1,6 @@
 [package]
 name = "pix0-market-contract"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["Christopher Chee <ketyung@techchee.com>"]
 edition = "2018"
 
@@ -49,7 +49,7 @@ schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
 pix0-contract-common = { version = "0.4.9", path = "../pix0-contract-common" }
-pix0-market-handlers = {version = "0.2.9", path = "../pix0-market-handlers"}
+pix0-market-handlers = {version = "0.3.0", path = "../pix0-market-handlers"}
 
 [dev-dependencies]
 cosmwasm-schema = "=1.0.0"

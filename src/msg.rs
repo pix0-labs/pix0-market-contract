@@ -1,9 +1,9 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::state::{SellOffer, BuyOffer, CollectionIndex};
+use crate::state::{BuyOffer, CollectionIndex};
 use cosmwasm_std::{Addr, Coin};
 use pix0_contract_common::state::{Fee, Contract};
-use pix0_market_handlers::state::SimpleCollectionInfo;
+use pix0_market_handlers::state::{SimpleCollectionInfo,SellOffer};
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

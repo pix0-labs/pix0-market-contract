@@ -1,7 +1,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use cosmwasm_std::{Addr, Coin, Timestamp};
-use crate::utils::offer_id;
 use pix0_market_handlers::state::SimpleCollectionInfo;
 
 pub const SELL_STATUS_NEW : u8 = 1;
@@ -24,46 +23,6 @@ pub struct CollectionIndex {
     pub number_of_sell_offers : u32, 
 
     pub date_created : Option<Timestamp>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct SellOffer {
-
-    pub token_id : String, 
-
-    pub owner : Addr,
-
-    // The NFT contract address
-    pub contract_addr : String, 
-
-    pub offer_id : Option<String>,
-
-    pub collection_info : Option<SimpleCollectionInfo>,
-
-    pub price : Coin, 
-
-    pub allowed_direct_buy : bool,
-
-    pub status : u8, 
-
-    pub deal_close_type : Option<u8>, 
-
-    pub date_created : Option<Timestamp>,
-    
-    pub date_updated : Option<Timestamp>,
-    
-}
-
-
-impl SellOffer {
-
-    pub fn to_offer_id(&self) -> Option<String> {
-
-        let key = (self.owner.clone(), self.contract_addr.clone(), self.token_id.clone());
-
-        return Some(offer_id(&key));
-        
-    }
 }
 
 

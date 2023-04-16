@@ -11,7 +11,7 @@ mod tests {
    // use crate::ins::*;
     use crate::query::*;
     use crate::ins::*;
-    use pix0_market_handlers::state::{SimpleCollectionInfo, Royalty};
+    use pix0_market_handlers::state::{SimpleCollectionInfo, Royalty, SellOffer};
 
     const DEFAULT_PRICE_DENOM : &str = "uconst";
 
