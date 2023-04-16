@@ -8,6 +8,45 @@
     "deployments": [
       {
         "project": "pix0-market-contract",
+        "type": "store",
+        "chainId": "constantine-2",
+        "codeId": 532,
+        "txhash": "BDC4F9245476277EDACA8AA8761D0B111D3DC64FD2AED63FC52158BF8B3B5FC2"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "instantiate",
+        "chainId": "constantine-2",
+        "codeId": 531,
+        "txhash": "32CEF55BC67B5211765561DA3CE2E8D61B21E26A8055DB8054C0B5D86A123847",
+        "address": "archway198hfms86n35ughlrvwt4jvzavhzz632eh9tcjfa2qnu3223khpuqwm8cze",
+        "admin": "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "store",
+        "chainId": "constantine-2",
+        "codeId": 531,
+        "txhash": "EF77CDA933C815B768C6E394D761CEB8F28AEB7744A57119BA4C715C7C236C3A"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "instantiate",
+        "chainId": "constantine-2",
+        "codeId": 530,
+        "txhash": "98FD8A14182688E74B6F99ED28E3773F7C1A597C857E182B51E6353C319CEBEC",
+        "address": "archway1rv54c7z5fd5gzrc9af60467uj6q6nxgn2vpzeq3pmm4ws5d6la9quae6s8",
+        "admin": "archway14l92fdhae4htjtkyla73f262c39cngf2wc65ky"
+      },
+      {
+        "project": "pix0-market-contract",
+        "type": "store",
+        "chainId": "constantine-2",
+        "codeId": 530,
+        "txhash": "DC90384D38B8B61FC6B9D6D30339D9AA4C46B247776945F34F6C97625A832461"
+      },
+      {
+        "project": "pix0-market-contract",
         "type": "instantiate",
         "chainId": "constantine-2",
         "codeId": 529,
