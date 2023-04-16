@@ -71,7 +71,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     save_collection_index(deps, offer.collection_info,Some(date_created));
 
     // transfer NFT from the seller to the contract
-    let cmsg = trigger_send_nft_to_contract(info, offer.token_id, offer.contract_addr)?;
+    let cmsg = trigger_send_nft_to_contract(_env, info, offer.token_id, offer.contract_addr)?;
 
     Ok(Response::new()
     .add_messages(bmsgs)
