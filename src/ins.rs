@@ -40,9 +40,10 @@ pub fn receive_nft(deps : DepsMut, _env : Env, info : MessageInfo, nft_msg: Cw72
 -> Result<Response, ContractError> {
 
     let sell_offer : SellOffer = from_binary(&nft_msg.msg)?;
-    assert_eq!(sell_offer.contract_addr, info.sender);
+    assert_eq!(sell_offer.token_id, nft_msg.token_id);
+    println!("info.sender.is{:?}", info.sender);
     create_sell_offer(deps, _env, info, sell_offer)
-    
+
 }
 
 
