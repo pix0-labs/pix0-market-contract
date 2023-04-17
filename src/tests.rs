@@ -46,7 +46,7 @@ mod tests {
     }
 
 
-    fn create_so (mut deps : DepsMut, info: MessageInfo, owner : &str, token_id : String,
+    fn create_so (deps : DepsMut, info: MessageInfo, owner : &str, token_id : String,
     offer_id : Option<String>, price : Coin, contract_addr : String, collection_info : Option<SimpleCollectionInfo>  )
     -> Result<Response, ContractError> {
 
@@ -65,12 +65,15 @@ mod tests {
             date_updated : None, 
         };
 
+        /*
         let create_so = ExecuteMsg::CreateSellOffer {
             offer : s.clone()
         };
 
         execute(deps.branch(), mock_env(), info.clone(), 
-         create_so.clone())
+         create_so.clone()) */
+
+        create_sell_offer(deps,mock_env(), info, s)
     }
 
     fn loop_create_so(mut deps : DepsMut, info: MessageInfo, max : u64, owner : &str, 
@@ -161,7 +164,7 @@ mod tests {
 
         let cat = Some("Category_3".to_string());
         let res = get_collection_indexes(deps.as_ref(), 
-        None, None, None, None);
+        cat.clone(), None, None, None);
 
         println!("\nCollections by category :{:?}", cat);
 

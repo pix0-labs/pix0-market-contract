@@ -9,7 +9,7 @@ use crate::query::{internal_get_buy_offer,internal_get_sell_offer_by_id, get_buy
 use pix0_contract_common::state::{Contract,Fee};
 use pix0_market_handlers::state::SellOffer;
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
-use pix0_market_handlers::triggers::{trigger_send_nft_to_contract, trigger_send_nft_from_contract};
+use pix0_market_handlers::triggers::trigger_send_nft_from_contract;
 use crate::collection_index::{save_collection_index, remove_sell_offer_from_index};
 use cw721::Cw721ReceiveMsg;
 
@@ -88,11 +88,11 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     save_collection_index(deps, offer.collection_info,Some(date_created));
 
     // transfer NFT from the seller to the contract
-    let cmsg = trigger_send_nft_to_contract(_env, info, offer.token_id, offer.contract_addr)?;
+    //let cmsg = trigger_send_nft_to_contract(_env, info, offer.token_id, offer.contract_addr)?;
 
     Ok(Response::new()
     .add_attribute("action", "create-sell-offer")
-    .add_message(cmsg)
+    //.add_message(cmsg)
     .add_messages(bmsgs))
     
 
