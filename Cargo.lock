@@ -491,7 +491,7 @@ dependencies = [
 
 [[package]]
 name = "pix0-market-contract"
-version = "1.0.8"
+version = "1.0.9"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -509,7 +509,7 @@ dependencies = [
 
 [[package]]
 name = "pix0-market-handlers"
-version = "0.3.3"
+version = "0.3.5"
 dependencies = [
  "cosmwasm-std",
  "cosmwasm-storage",
