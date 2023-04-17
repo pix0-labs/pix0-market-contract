@@ -36,14 +36,18 @@ pub fn update_contract_info (deps: DepsMut,
 }
 
 
-pub fn receive_and_create_sell_offer(deps : DepsMut, _env : Env, info : MessageInfo, nft_msg: Cw721ReceiveMsg) 
+pub fn receive_and_create_sell_offer(_deps : DepsMut, _env : Env, info : MessageInfo, nft_msg: Cw721ReceiveMsg) 
 -> Result<Response, ContractError> {
 
     let sell_offer : SellOffer = from_binary(&nft_msg.msg)?;
     assert_eq!(sell_offer.token_id, nft_msg.token_id);
     println!("info.sender.is:{:?}, contract_addr::{}", info.sender, sell_offer.contract_addr);
-    create_sell_offer(deps, _env, sell_offer)
-
+    assert_eq!(info.sender, sell_offer.contract_addr);
+   
+    //create_sell_offer(deps, _env, sell_offer)
+   
+    Ok(Response::new()
+    .add_attribute("action", "create-sell-offer-upon-nft-received"))
 }
 
 
