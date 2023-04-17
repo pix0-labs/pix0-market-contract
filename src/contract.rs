@@ -6,9 +6,9 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::ins::{create_sell_offer,update_contract_info, create_buy_offer, 
+use crate::ins::{update_contract_info, create_buy_offer, 
 update_buy_offer, cancel_buy_offer, update_sell_offer, cancel_sell_offer, 
-transfer_to_escrow, accept_buy_offer, direct_buy};
+transfer_to_escrow, accept_buy_offer, direct_buy, receive_nft};
 use crate::query::{get_sell_offers_of, get_sell_offer_by_id, get_balance_of_escrow,
 get_buy_offers_by, get_buy_offers_of, get_sell_offers, get_collection_indexes, get_collection_index};
 use pix0_contract_common::msg::InstantiateMsg;
@@ -48,7 +48,9 @@ pub fn execute(
         ExecuteMsg::UpdateContractInfo { fees, treasuries , contracts,  log_last_payment} =>
         update_contract_info(deps, _env, _info, fees, treasuries, contracts,log_last_payment),
 
-        ExecuteMsg::CreateSellOffer { offer } => create_sell_offer(deps, _env,_info, offer),
+        //ExecuteMsg::CreateSellOffer { offer } => create_sell_offer(deps, _env,_info, offer),
+
+        ExecuteMsg::ReceiveNft(msg) =>receive_nft(deps, _env, _info, msg),
 
         ExecuteMsg::UpdateSellOffer { offer } => update_sell_offer(deps, _env,_info, offer),
       

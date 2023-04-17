@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute};
+use cosmwasm_std::{DepsMut, Deps, Env, Response, MessageInfo, Addr, Uint128, Coin, BankMsg, Attribute, from_binary};
 use crate::state::{SELL_STATUS_NEW, BuyOffer, SELL_STATUS_CLOSED, DEAL_CLOSED_OFFER_ACCEPTED,
 DEAL_CLOSED_AT_DIRECT_BUY};
 use crate::indexes::{sell_offers_store, BUY_OFFERS_STORE};
@@ -11,6 +11,9 @@ use pix0_market_handlers::state::SellOffer;
 use pix0_contract_common::funcs::{try_paying_contract_treasuries};
 use pix0_market_handlers::triggers::{trigger_send_nft_to_contract, trigger_send_nft_from_contract};
 use crate::collection_index::{save_collection_index, remove_sell_offer_from_index};
+use cw721::Cw721ReceiveMsg;
+
+
 /*
 Wrapper function
 */
@@ -31,6 +34,18 @@ pub fn update_contract_info (deps: DepsMut,
         Err(e)=> Err(ContractError::from(e)),
     }
 }
+
+
+pub fn receive_nft(deps : DepsMut, _env : Env, info : MessageInfo, nft_msg: Cw721ReceiveMsg) 
+-> Result<Response, ContractError> {
+
+    let sell_offer : SellOffer = from_binary(&nft_msg.msg)?;
+    assert_eq!(sell_offer.contract_addr, info.sender);
+    create_sell_offer(deps, _env, info, sell_offer)
+    
+}
+
+
 
 
 pub fn create_sell_offer(mut deps: DepsMut, 

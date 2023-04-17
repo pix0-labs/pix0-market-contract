@@ -4,6 +4,7 @@ use crate::state::{BuyOffer, CollectionIndex};
 use cosmwasm_std::{Addr, Coin};
 use pix0_contract_common::state::{Fee, Contract};
 use pix0_market_handlers::state::{SimpleCollectionInfo,SellOffer};
+use cw721::Cw721ReceiveMsg;
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -21,10 +22,11 @@ pub enum ExecuteMsg {
         log_last_payment : Option<bool>, 
     },
 
+    /*
     CreateSellOffer {
 
         offer : SellOffer,
-    },
+    }, */
 
     UpdateSellOffer {
 
@@ -80,6 +82,8 @@ pub enum ExecuteMsg {
     TestTransferToEscrow {
         coin : Coin,
     },
+
+    ReceiveNft(Cw721ReceiveMsg),
 
 }
 
