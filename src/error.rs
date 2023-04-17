@@ -64,6 +64,10 @@ impl From<CommonContractError> for ContractError {
             ContractError::ContractInfoNotFound { message: message }
             ,
 
+            CommonContractError::InsufficientFund { message } =>
+            ContractError::InsufficientFund { message: message }
+            ,
+
             CommonContractError::ErrorMakingPayment { message } => 
             ContractError::ErrorPayingContractTreasuries { message:  message }
             ,
