@@ -30,10 +30,9 @@ pub (crate) fn sell_offer_exists_by_offer_id( deps: &Deps, offer_id : String ) -
 }
 
 
-pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : String, 
+pub (crate) fn sell_offer_exists( deps: &Deps, owner : Addr, token_id : String, 
     contract_addr : String ) -> Option<SellOffer> {
 
-    let owner = info.clone().sender;
     
     let _key = (owner, to_unique_token_id(contract_addr, token_id));
 
@@ -57,13 +56,13 @@ pub (crate) fn sell_offer_exists( deps: &Deps, info: MessageInfo, token_id : Str
 }
 
 
-pub (crate) fn check_sell_offer_exists (deps : &Deps,info: &MessageInfo, token_id : String, 
+pub (crate) fn check_sell_offer_exists (deps : &Deps, owner : Addr, token_id : String, 
 contract_addr : String,    
 error_on_exists : bool ) 
 -> Result<Option<SellOffer>, ContractError> {
 
     if error_on_exists {
-        let so = sell_offer_exists(&deps, info.clone(), token_id.clone(), contract_addr);
+        let so = sell_offer_exists(&deps, owner,token_id.clone(), contract_addr);
         
         if so.is_some() {
 
@@ -75,7 +74,7 @@ error_on_exists : bool )
     }
     else {
 
-        let so = sell_offer_exists(&deps, info.clone(), token_id.clone(), contract_addr);
+        let so = sell_offer_exists(&deps, owner, token_id.clone(), contract_addr);
 
         if so.is_none() {
 

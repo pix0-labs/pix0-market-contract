@@ -42,7 +42,7 @@ pub fn receive_and_create_sell_offer(deps : DepsMut, _env : Env, info : MessageI
     let sell_offer : SellOffer = from_binary(&nft_msg.msg)?;
     assert_eq!(sell_offer.token_id, nft_msg.token_id);
     println!("info.sender.is:{:?}, contract_addr::{}", info.sender, sell_offer.contract_addr);
-    create_sell_offer(deps, _env, info, sell_offer)
+    create_sell_offer(deps, _env, sell_offer)
 
 }
 
@@ -50,11 +50,10 @@ pub fn receive_and_create_sell_offer(deps : DepsMut, _env : Env, info : MessageI
 
 
 pub fn create_sell_offer(deps: DepsMut, 
-_env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractError> {
+_env : Env, offer : SellOffer)  -> Result<Response, ContractError> {
 
-    let owner = info.clone().sender;
-
-    check_sell_offer_exists (&deps.as_ref(), &info, offer.token_id.clone(), offer.contract_addr.clone(), true )?;
+   
+    check_sell_offer_exists (&deps.as_ref(), offer.owner.clone(), offer.token_id.clone(), offer.contract_addr.clone(), true )?;
 
     let date_created = _env.block.time;
 
@@ -64,7 +63,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     }
  
     let new_offer = SellOffer {
-        owner : owner.clone(),
+        owner : offer.owner.clone(),
         contract_addr : offer.contract_addr.clone(),
         token_id : offer.token_id.clone(),
         offer_id : offer_id,
@@ -81,7 +80,7 @@ _env : Env, info: MessageInfo, offer : SellOffer)  -> Result<Response, ContractE
     //info.clone(), "CREATE_SELL_OFFER_FEE")?;
  
 
-    let _key = (owner, to_unique_token_id(offer.contract_addr.clone(), offer.token_id.clone()) );
+    let _key = (offer.owner, to_unique_token_id(offer.contract_addr.clone(), offer.token_id.clone()) );
 
     sell_offers_store().save(deps.storage, _key, &new_offer)?;
 
@@ -105,7 +104,7 @@ pub fn update_sell_offer(deps: DepsMut,
 
     let owner = info.clone().sender;
 
-    let so = check_sell_offer_exists (&deps.as_ref(), &info, sell_offer.token_id.clone(), 
+    let so = check_sell_offer_exists (&deps.as_ref(), owner.clone(), sell_offer.token_id.clone(), 
     sell_offer.contract_addr.clone(), false)?;
 
     let mut offer_to_update = so.unwrap();
