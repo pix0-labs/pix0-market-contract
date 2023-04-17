@@ -36,7 +36,7 @@ pub fn update_contract_info (deps: DepsMut,
 }
 
 
-pub fn receive_nft(deps : DepsMut, _env : Env, info : MessageInfo, nft_msg: Cw721ReceiveMsg) 
+pub fn receive_and_create_sell_offer(deps : DepsMut, _env : Env, info : MessageInfo, nft_msg: Cw721ReceiveMsg) 
 -> Result<Response, ContractError> {
 
     let sell_offer : SellOffer = from_binary(&nft_msg.msg)?;
