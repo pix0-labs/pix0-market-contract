@@ -4,6 +4,8 @@ This is the CosmWasm smart contract of Pix0 that provides marketplace functional
 
 The contract also provides functionalities for querying listed sell offers by owners, NFT collections, and buy offers by sell offers, owners, etc.
 
+[Test dApp for this market contract (https://market.pix0.xyz)](https://market.pix0.xyz)
+
 [License MIT](https://github.com/pix0-labs/pix0-market-contract/blob/main/LICENSE)
 
 
