@@ -50,7 +50,7 @@ cw721-base = { version = "0.13.4", features = ["library"] }
 schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
-pix0-contract-common = { version = "0.5.6", path = "../pix0-contract-common" }
+pix0-contract-common = { version = "0.5.7", path = "../pix0-contract-common" }
 pix0-market-handlers = {version = "0.4.0", path = "../pix0-market-handlers"}
 
 [dev-dependencies]
