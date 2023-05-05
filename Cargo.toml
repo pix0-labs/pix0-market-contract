@@ -54,4 +54,4 @@ pix0-contract-common = { version = "0.5.7", path = "../pix0-contract-common" }
 pix0-market-handlers = {version = "0.4.0", path = "../pix0-market-handlers"}
 
 [dev-dependencies]
-cosmwasm-schema = "=1.0.0"
+cosmwasm-schema = "1.2.1"
