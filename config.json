@@ -8,6 +8,18 @@
     "deployments": [
       {
         "project": "pix0-market-contract",
+        "type": "set-metadata",
+        "chainId": "constantine-2",
+        "codeId": 549,
+        "txhash": "78E66F1245DC9AC439D88C98EB6B711A27B54E7D334B1E114B2131FFCF440097",
+        "contract": "archway17uwyd0wsgulyeadjpustg3xym3gzcatqss46rr6hhkgh74zmdmpsq5ey8w",
+        "contractMetadata": {
+          "ownerAddress": "",
+          "rewardsAddress": "archway15ymuqvwrmgz4jxdlzu4z35vjanf07ft208d8yd8exgjn8lcn0h8q9guzr8"
+        }
+      },
+      {
+        "project": "pix0-market-contract",
         "type": "instantiate",
         "chainId": "constantine-2",
         "codeId": 549,
